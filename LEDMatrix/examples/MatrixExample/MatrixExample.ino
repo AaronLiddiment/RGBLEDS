@@ -13,7 +13,7 @@
 #define NUM_LEDS  (MATRIX_WIDTH * MATRIX_HEIGHT)
 
 CRGB leds[NUM_LEDS];
-cLEDMatrix LEDMatrix;
+cLEDMatrix LEDMatrix(MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_ZIGZAG, leds);;
 
 uint8_t hue;
 int16_t counter;
@@ -34,7 +34,6 @@ void setup()
   delay(1000);
   FastLED.show();
 
-  LEDMatrix.LEDArray(MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_ZIGZAG, leds);
   hue = 0;
   counter = 0;
 }

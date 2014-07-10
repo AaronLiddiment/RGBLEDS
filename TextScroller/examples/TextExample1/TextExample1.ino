@@ -15,11 +15,12 @@
 #define NUM_LEDS  (MATRIX_WIDTH * MATRIX_HEIGHT)
 
 CRGB leds[NUM_LEDS];
-cLEDMatrix LEDMatrix;
+cLEDMatrix LEDMatrix(MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_ZIGZAG, leds);
 
 cTextScroller ScrollingMsg;
 #define MESSAGE_WIDTH   68
 #define MESSAGE_HEIGHT  8
+#define MESSAGE_Y       0
 
 const unsigned char TxtDemo[] = { EFFECT_SCROLL_LEFT "            LEFT SCROLL "
                                   EFFECT_SCROLL_RIGHT "            LLORCS THGIR"
@@ -52,10 +53,8 @@ void setup()
   delay(1000);
   FastLED.show();
 
-  LEDMatrix.LEDArray(MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_ZIGZAG, leds);
-
   ScrollingMsg.SetFont(MATRISE_WIDTH, MATRISE_HEIGHT, MATRISE_CHAR_LOW, MATRISE_CHAR_HIGH, MatriseData);
-  ScrollingMsg.Init(&LEDMatrix, MESSAGE_WIDTH, MESSAGE_HEIGHT, 0, 0);
+  ScrollingMsg.Init(&LEDMatrix, MESSAGE_WIDTH, MESSAGE_HEIGHT, 0, MESSAGE_Y);
   ScrollingMsg.SetText((unsigned char *)TxtDemo, sizeof(TxtDemo) - 1);
 }
 

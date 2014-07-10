@@ -4,7 +4,7 @@
 class cLEDMatrix
 {
   public:
-    void LEDArray(uint16_t Width, uint16_t Height, bool ZigZag, CRGB *LAry);
+    cLEDMatrix(uint16_t Width, uint16_t Height, bool ZigZag, CRGB *LAry);
     void HorizontalMirror(bool FullHeight = true);
     void VerticalMirror();
     void QuadrantMirror();

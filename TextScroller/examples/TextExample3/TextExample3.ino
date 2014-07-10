@@ -15,11 +15,12 @@
 #define NUM_LEDS  (MATRIX_WIDTH * MATRIX_HEIGHT)
 
 CRGB leds[NUM_LEDS];
-cLEDMatrix LEDMatrix;
+cLEDMatrix LEDMatrix(MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_ZIGZAG, leds);
 
 cTextScroller ScrollingMsg1, ScrollingMsg2;
 #define MESSAGE_WIDTH   68
 #define MESSAGE_HEIGHT  8
+#define MESSAGE_Y       0
 
 const unsigned char PlasmaTxt[] = { EFFECT_BACKGND_LEAVE EFFECT_RGB "\xff\xff\xff" "         F-PLASMA " EFFECT_DELAY_FRAMES "\x01\x2c" "         "
                                     EFFECT_BACKGND_DIMMING "\x40" EFFECT_RGB "\xff\xff\xff" "         F-PLASMA " EFFECT_DELAY_FRAMES "\x01\x2c" "         "
@@ -51,7 +52,6 @@ void setup()
   delay(1000);
   FastLED.show();
 
-  LEDMatrix.LEDArray(MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_ZIGZAG, leds);
   ScrollingMsg1.SetFont(ROBOTRON_WIDTH, ROBOTRON_HEIGHT, ROBOTRON_CHAR_LOW, ROBOTRON_CHAR_HIGH, RobotronData);
   ScrollingMsg2.SetFont(ROBOTRON_WIDTH, ROBOTRON_HEIGHT, ROBOTRON_CHAR_LOW, ROBOTRON_CHAR_HIGH, RobotronData);
 
@@ -79,7 +79,7 @@ void setup()
     delay(20);
   }
 
-  ScrollingMsg1.Init(&LEDMatrix, WholeEvenChars, MESSAGE_HEIGHT, (MESSAGE_WIDTH - WholeEvenChars) / 2, 0);
+  ScrollingMsg1.Init(&LEDMatrix, WholeEvenChars, MESSAGE_HEIGHT, (MESSAGE_WIDTH - WholeEvenChars) / 2, MESSAGE_Y);
   ScrollingMsg1.SetText((unsigned char *)PlasmaTxt, sizeof(PlasmaTxt) - 1);
 
   PlasmaShift = (random8(0, 5) * 32) + 64;

@@ -11,7 +11,7 @@ Written & tested on a Teensy 3.1
 #include <LEDMatrix.h>
 
 
-void cLEDMatrix::LEDArray(uint16_t Width, uint16_t Height, bool ZigZag, CRGB *LAry)
+cLEDMatrix::cLEDMatrix(uint16_t Width, uint16_t Height, bool ZigZag, CRGB *LAry)
 {
   m_Width = Width;
   m_Height = Height;
