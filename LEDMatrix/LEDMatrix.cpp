@@ -66,99 +66,56 @@ void cLEDMatrix::VerticalMirror()
 
 void cLEDMatrix::TriangleTopMirror(bool FullHeight)
 {
-  int MaxXY, ty, i, j, k, x, y;
+  int MaxXY, x, y, src, dst;
 
   if (m_Width > m_Height)
-    MaxXY = m_Height;
+    MaxXY = m_Height - 1;
   else
-    MaxXY = m_Width;
-  if (FullHeight)
-    ty = MaxXY - 1;
-  else
-    ty = (MaxXY - 1) / 2;
-  i = m_Width;
-  if (m_ZigZag)
-    i += m_XMax;
-  for (y=1; y<=ty; y++)
+    MaxXY = m_Width - 1;
+  if (! FullHeight)
+    MaxXY /= 2;
+  for (y=1; y<=MaxXY; y++)
   {
-    j = i;
-    k = y;
     for (x=0; x<y; x++)
     {
-      m_MatrixLeds[k] = m_MatrixLeds[j];
       if ((m_ZigZag) && (y % 2))
-        j--;
+        src = (((y + 1) * m_Width) - 1) - x;
       else
-        j++;
-      if (m_ZigZag)
-      {
-        if (x % 2)
-           k += ((y * 2) + 1);
-        else
-           k += (((m_Width - y) * 2) - 1);
-      }
+        src = (y * m_Width) + x;
+      if ((m_ZigZag) && (x % 2))
+        dst = (((x + 1) * m_Width) - 1) - y;
       else
-        k += m_Width;
+        dst = (x * m_Width) + y;
+      m_MatrixLeds[dst] = m_MatrixLeds[src];
     }
-    if (m_ZigZag)
-    {
-      if (y % 2)
-         i++;
-      else
-         i += ((m_Width * 2) - 1);
-    }
-    else
-      i += m_Width;
   }
 }
 
 
 void cLEDMatrix::TriangleBottomMirror(bool FullHeight)
 {
-  int MaxXY, tx, i, j, k, x, y;
+  int MaxXY, i, j, k, x, y, xx, yy, src, dst;
 
   if (m_Width > m_Height)
-    MaxXY = m_Height;
+    MaxXY = m_Height - 1;
   else
-    MaxXY = m_Width;
-  if (FullHeight)
-    tx = MaxXY - 1;
-  else
-    tx = ((MaxXY - 1) / 2);
-  if (m_ZigZag)
-    j = ((m_Width * 2) - 1) - tx;
-  else
-    j = m_Width + tx;
-  for (x=tx-1; x>=0; x--)
+    MaxXY = m_Width - 1;
+  if (! FullHeight)
+    MaxXY /= 2;
+  for (y=0,xx=MaxXY; y<MaxXY; y++,xx--)
   {
-    i = x;
-    k = j;
-    for (y=0; y<(tx-x); y++)
+    for (x=MaxXY-y-1,yy=y+1; x>=0; x--,yy++)
     {
-      m_MatrixLeds[k] = m_MatrixLeds[i];
-      if (m_ZigZag)
-      {
-        if (y % 2)
-           i += ((x * 2) + 1);
-        else
-           i += (((m_Width - x) * 2) - 1);
-      }
+      if ((m_ZigZag) && (y % 2))
+        src = (((y + 1) * m_Width) - 1) - x;
       else
-        i += m_Width;
-      if ((m_ZigZag) && ((tx - x) % 2))
-        k++;
+        src = (y * m_Width) + x;
+      if ((m_ZigZag) && (yy % 2))
+        dst = (((yy + 1) * m_Width) - 1) - xx;
       else
-        k--;
+        dst = (yy * m_Width) + xx;
+      m_MatrixLeds[dst] = m_MatrixLeds[src];
     }
-    if (m_ZigZag)
-    {
-      if ((tx - x) % 2)
-          j += ((tx * 2) + 1);
-      else
-          j += (((m_Width - tx) * 2) - 1);
-    }
-    else
-      j += m_Width;
   }
 }
 
