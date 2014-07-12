@@ -14,6 +14,10 @@ LEDArray	KEYWORD2
 HorizontalMirror	KEYWORD2
 VerticalMirror	KEYWORD2
 QuadrantMirror	KEYWORD2
+TriangleTopMirror	KEYWORD2
+TriangleBottomMirror	KEYWORD2
+QuadrantTopTriangleMirror	KEYWORD2
+QuadrantBottomTriangleMirror	KEYWORD2
 MatrixXY	KEYWORD2
 
 #######################################
