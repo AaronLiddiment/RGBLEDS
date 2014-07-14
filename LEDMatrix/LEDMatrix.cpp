@@ -3,12 +3,22 @@ LEDMatrix class by Aaron Liddiment (c) 2014
 
 Used by my TextScroller class and uses the 
 FastLED v2.1 library by Daniel Garcia and Mark Kriegsmann.
+Inspiration for some of the Matrix functions by Stefan Petrick
 
 Written & tested on a Teensy 3.1
 */
 
 #include <FastLED.h>
 #include <LEDMatrix.h>
+
+
+inline uint16_t cLEDMatrix::mXY(int16_t x, int16_t y)
+{
+  if ((m_ZigZag) && (y % 2))
+    return((((y + 1) * m_Width) - 1) - x);
+  else
+    return((y * m_Width) + x);
+}
 
 
 cLEDMatrix::cLEDMatrix(uint16_t Width, uint16_t Height, bool ZigZag, CRGB *LAry)
@@ -18,6 +28,15 @@ cLEDMatrix::cLEDMatrix(uint16_t Width, uint16_t Height, bool ZigZag, CRGB *LAry)
   m_XMax = Width - 1;
   m_ZigZag = ZigZag;
   m_MatrixLeds = LAry;
+}
+
+
+struct CRGB &cLEDMatrix::MatrixXY(int16_t x, int16_t y)
+{
+  if ( (x >= 0) && (x < m_Width) && (y >= 0) && (y < m_Height))
+    return(m_MatrixLeds[mXY(x,y)]);
+  else
+    return(m_OutOfBounds);
 }
 
 
@@ -64,9 +83,45 @@ void cLEDMatrix::VerticalMirror()
 }
 
 
+void cLEDMatrix::QuadrantMirror()
+{
+  HorizontalMirror(false);
+  VerticalMirror();
+}
+
+
+void cLEDMatrix::QuadrantRotateMirror()
+{
+  int MaxXY, MidXY, x, y, xx, yy, src;
+
+  if (m_Width > m_Height)
+    MaxXY = m_Height;
+  else
+    MaxXY = m_Width;
+  MidXY = (MaxXY / 2);
+  MaxXY--;
+  for (x=MidXY-(MaxXY%2); x>=0; x--)
+  {
+    for (y=MidXY-(MaxXY%2); y>=0; y--)
+    {
+      src = mXY(x, y);
+      xx = MidXY + y;
+      yy = MidXY - (MaxXY % 2) - x;
+      m_MatrixLeds[mXY(xx, yy)] = m_MatrixLeds[src];
+      xx = MaxXY - x;
+      yy = MaxXY - y;
+      m_MatrixLeds[mXY(xx, yy)] = m_MatrixLeds[src];
+      xx = MidXY - (MaxXY % 2) - y;
+      yy = MidXY + x;
+      m_MatrixLeds[mXY(xx, yy)] = m_MatrixLeds[src];
+    }
+  }
+}
+
+
 void cLEDMatrix::TriangleTopMirror(bool FullHeight)
 {
-  int MaxXY, x, y, src, dst;
+  int MaxXY, x, y;
 
   if (m_Width > m_Height)
     MaxXY = m_Height - 1;
@@ -77,24 +132,14 @@ void cLEDMatrix::TriangleTopMirror(bool FullHeight)
   for (y=1; y<=MaxXY; y++)
   {
     for (x=0; x<y; x++)
-    {
-      if ((m_ZigZag) && (y % 2))
-        src = (((y + 1) * m_Width) - 1) - x;
-      else
-        src = (y * m_Width) + x;
-      if ((m_ZigZag) && (x % 2))
-        dst = (((x + 1) * m_Width) - 1) - y;
-      else
-        dst = (x * m_Width) + y;
-      m_MatrixLeds[dst] = m_MatrixLeds[src];
-    }
+      m_MatrixLeds[mXY(y,x)] = m_MatrixLeds[mXY(x,y)];
   }
 }
 
 
 void cLEDMatrix::TriangleBottomMirror(bool FullHeight)
 {
-  int MaxXY, i, j, k, x, y, xx, yy, src, dst;
+  int MaxXY, x, y, xx, yy;
 
   if (m_Width > m_Height)
     MaxXY = m_Height - 1;
@@ -105,25 +150,8 @@ void cLEDMatrix::TriangleBottomMirror(bool FullHeight)
   for (y=0,xx=MaxXY; y<MaxXY; y++,xx--)
   {
     for (x=MaxXY-y-1,yy=y+1; x>=0; x--,yy++)
-    {
-      if ((m_ZigZag) && (y % 2))
-        src = (((y + 1) * m_Width) - 1) - x;
-      else
-        src = (y * m_Width) + x;
-      if ((m_ZigZag) && (yy % 2))
-        dst = (((yy + 1) * m_Width) - 1) - xx;
-      else
-        dst = (yy * m_Width) + xx;
-      m_MatrixLeds[dst] = m_MatrixLeds[src];
-    }
+      m_MatrixLeds[mXY(xx,yy)] = m_MatrixLeds[mXY(x,y)];
   }
-}
-
-
-void cLEDMatrix::QuadrantMirror()
-{
-  HorizontalMirror(false);
-  VerticalMirror();
 }
 
 
@@ -138,18 +166,4 @@ void cLEDMatrix::QuadrantBottomTriangleMirror()
 {
   TriangleBottomMirror(false);
   QuadrantMirror();
-}
-
-
-struct CRGB &cLEDMatrix::MatrixXY(int16_t x, int16_t y)
-{
-  if ( (x >= 0) && (x < m_Width) && (y >= 0) && (y < m_Height))
-  {
-  if ((m_ZigZag) && (y % 2))
-      return(m_MatrixLeds[(((y + 1) * m_Width) - 1) - x]);
-    else
-      return(m_MatrixLeds[(y * m_Width) + x]);
-  }
-  else
-    return(m_OutOfBounds);
 }

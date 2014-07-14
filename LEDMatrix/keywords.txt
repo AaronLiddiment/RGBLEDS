@@ -11,14 +11,15 @@ cLEDMatrix	KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 LEDArray	KEYWORD2
+MatrixXY	KEYWORD2
 HorizontalMirror	KEYWORD2
 VerticalMirror	KEYWORD2
 QuadrantMirror	KEYWORD2
+QuadrantRotateMirror	KEYWORD2
 TriangleTopMirror	KEYWORD2
 TriangleBottomMirror	KEYWORD2
 QuadrantTopTriangleMirror	KEYWORD2
 QuadrantBottomTriangleMirror	KEYWORD2
-MatrixXY	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

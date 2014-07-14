@@ -47,7 +47,7 @@ void loop()
   FastLED.clear();
   
   h = hue;
-  if (counter < 875)
+  if (counter < 1125)
   {
     // ** Fill LED's with diagonal stripes
     sx = sy = 0;
@@ -70,10 +70,10 @@ void loop()
   }
   else
   {
-    // ** Fill LED's with vertical stripes
-    for (x=0; x<MATRIX_WIDTH; x++)
+    // ** Fill LED's with horizontal stripes
+    for (y=0; y<MATRIX_HEIGHT; y++)
     {
-      for (y=0; y<MATRIX_HEIGHT; y++)
+      for (x=0; x<MATRIX_WIDTH; x++)
         LEDMatrix.MatrixXY(x, y) = CHSV(h, 255, 255);
       h+=16;
     }
@@ -88,19 +88,21 @@ void loop()
     LEDMatrix.VerticalMirror();
   else if (counter < 875)
     LEDMatrix.QuadrantMirror();
-  else if (counter < 1000)
-    ;
+  else if (counter < 1125)
+    LEDMatrix.QuadrantRotateMirror();
   else if (counter < 1250)
-    LEDMatrix.TriangleTopMirror();
+    ;
   else if (counter < 1500)
-    LEDMatrix.TriangleBottomMirror();
+    LEDMatrix.TriangleTopMirror();
   else if (counter < 1750)
-    LEDMatrix.QuadrantTopTriangleMirror();
+    LEDMatrix.TriangleBottomMirror();
   else if (counter < 2000)
+    LEDMatrix.QuadrantTopTriangleMirror();
+  else if (counter < 2250)
     LEDMatrix.QuadrantBottomTriangleMirror();
 
   counter++;
-  if (counter >= 2000)
+  if (counter >= 2250)
     counter = 0;
   FastLED.show();
   delay(20);
