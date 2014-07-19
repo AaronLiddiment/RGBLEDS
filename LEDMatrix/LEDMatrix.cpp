@@ -14,19 +14,28 @@ Written & tested on a Teensy 3.1
 
 inline uint16_t cLEDMatrix::mXY(int16_t x, int16_t y)
 {
-  if ((m_ZigZag) && (y % 2))
-    return((((y + 1) * m_Width) - 1) - x);
+  if (m_Type & 1)
+  { // Vertical Matrix
+    if ((m_Type & 2) && (x % 2))
+      return((((x + 1) * m_Height) - 1) - y);
+    else
+      return((x * m_Height) + y);
+  }
   else
-    return((y * m_Width) + x);
+  { // Horizontal Matrix
+    if ((m_Type & 2) && (y % 2))
+      return((((y + 1) * m_Width) - 1) - x);
+    else
+      return((y * m_Width) + x);
+  }
 }
 
 
-cLEDMatrix::cLEDMatrix(uint16_t Width, uint16_t Height, bool ZigZag, CRGB *LAry)
+cLEDMatrix::cLEDMatrix(uint16_t Width, uint16_t Height, MatrixType_t Type, CRGB *LAry)
 {
   m_Width = Width;
   m_Height = Height;
-  m_XMax = Width - 1;
-  m_ZigZag = ZigZag;
+  m_Type = Type;
   m_MatrixLeds = LAry;
 }
 
@@ -42,43 +51,28 @@ struct CRGB &cLEDMatrix::MatrixXY(int16_t x, int16_t y)
 
 void cLEDMatrix::HorizontalMirror(bool FullHeight)
 {
-  int i, x, y;
+  int ty, y, x, xx;
 
   if (FullHeight)
-    y = m_Height - 1;
+    ty = m_Height - 1;
   else
-    y = (m_Height / 2);
-  for (i=(y*m_Width); y>=0; y--,i-=m_Width)
+    ty = (m_Height / 2);
+  for (y=ty; y>=0; y--)
   {
-    for (x=(m_Width/2)-1; x>=0; x--)
-    {
-      if ((m_ZigZag) && (y % 2))
-        m_MatrixLeds[i + x] = m_MatrixLeds[i + m_XMax - x];
-      else
-        m_MatrixLeds[i + m_XMax - x] = m_MatrixLeds[i + x];
-    }
+    for (x=(m_Width/2)-1,xx=((m_Width+1)/2); x>=0; x--,xx++)
+      m_MatrixLeds[mXY(xx, y)] = m_MatrixLeds[mXY(x, y)];
   }
 }
 
 
 void cLEDMatrix::VerticalMirror()
 {
-  int i, x, offset;
+  int y, yy, x;
 
-  for (offset=((m_Height-1)*m_Width),i=0; offset>0; offset-=(m_Width*2),i+=m_Width)
+  for (y=(m_Height/2)-1,yy=((m_Height+1)/2); y>=0; y--,yy++)
   {
     for (x=m_Width-1; x>=0; x--)
-    {
-      if (m_Height % 2)
-        m_MatrixLeds[i + offset + x] = m_MatrixLeds[i + x];
-      else
-      {
-        if (i % 2)
-          m_MatrixLeds[i + offset + x] = m_MatrixLeds[i + m_XMax - x];
-        else
-          m_MatrixLeds[i + offset + m_XMax - x] = m_MatrixLeds[i + x];
-      }
-    }
+      m_MatrixLeds[mXY(x, yy)] = m_MatrixLeds[mXY(x, y)];
   }
 }
 

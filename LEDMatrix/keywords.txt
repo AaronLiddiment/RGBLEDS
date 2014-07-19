@@ -24,3 +24,7 @@ QuadrantBottomTriangleMirror	KEYWORD2
 #######################################
 # Constants (LITERAL1)
 #######################################
+HORIZONTAL_MATRIX	LITERAL1
+VERTICAL_MATRIX	LITERAL1
+HORIZONTAL_ZIGZAG_MATRIX	LITERAL1
+VERTICAL_ZIGZAG_MATRIX	LITERAL1

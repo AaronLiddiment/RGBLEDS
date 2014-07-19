@@ -4,18 +4,20 @@
 #include <TextScroller.h>
 #include <FontRobotron.h>
 
+// Change the next 6 defines to match your matrix type and size
+
 #define LED_PIN        2
 #define COLOR_ORDER    GRB
 #define CHIPSET        WS2812B
 
 #define MATRIX_WIDTH   68
 #define MATRIX_HEIGHT  7
-#define MATRIX_ZIGZAG  true
+#define MATRIX_TYPE    HORIZONTAL_ZIGZAG_MATRIX
 
 #define NUM_LEDS  (MATRIX_WIDTH * MATRIX_HEIGHT)
 
 CRGB leds[NUM_LEDS];
-cLEDMatrix LEDMatrix(MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_ZIGZAG, leds);
+cLEDMatrix LEDMatrix(MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE, leds);
 
 cTextScroller ScrollingMsg1, ScrollingMsg2;
 #define MESSAGE_WIDTH   68
