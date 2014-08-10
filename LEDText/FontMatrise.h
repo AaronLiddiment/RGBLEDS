@@ -1,3 +1,6 @@
+#ifndef FontMatrise_h
+#define FontMatrise_h
+
 #define  MATRISE_WIDTH      5
 #define  MATRISE_HEIGHT     7
 #define  MATRISE_CHAR_LOW   32
@@ -100,3 +103,5 @@ const uint8_t MatriseData[] = {
         0x00, 0x00, 0x09, 0x16, 0x00, 0x00, 0x00,  // Code for char ~
         0x0E, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0E   // Code for char 
 				};
+
+#endif

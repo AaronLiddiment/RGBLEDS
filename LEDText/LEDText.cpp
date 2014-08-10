@@ -1,5 +1,5 @@
 /*
-TextScroller V2 class by Aaron Liddiment (c) 2014
+LEDText V3 class by Aaron Liddiment (c) 2014
 
 Uses my LEDMatrix class and especially the 
 FastLED v2.1 library by Daniel Garcia and Mark Kriegsmann.
@@ -10,7 +10,7 @@ Even the basic examples need 19k rom & 5k ram
 
 #include <FastLED.h>
 #include <LEDMatrix.h>
-#include <TextScroller.h>
+#include <LEDText.h>
 
 #define  BACKGND_MASK    (BACKGND_ERASE | BACKGND_LEAVE | BACKGND_DIMMING)
 #define  CHAR_MASK       (CHAR_UP | CHAR_DOWN | CHAR_LEFT | CHAR_RIGHT)
@@ -47,7 +47,7 @@ Even the basic examples need 19k rom & 5k ram
 #define  UC_COLR_DIMMING       0xe0
 
 
-void cTextScroller::SetFont(uint8_t FontW, uint8_t FontH, uint8_t ChBase, uint8_t ChUpper, const uint8_t *FontData)
+void cLEDText::SetFont(uint8_t FontW, uint8_t FontH, uint8_t ChBase, uint8_t ChUpper, const uint8_t *FontData)
 {
   m_FontWidth = FontW;
   m_FontHeight = FontH;
@@ -57,7 +57,7 @@ void cTextScroller::SetFont(uint8_t FontW, uint8_t FontH, uint8_t ChBase, uint8_
 }
 
 
-void cTextScroller::Init(cLEDMatrixBase *Matrix, uint16_t Width, uint16_t Height, int16_t OriginX, int16_t OriginY)
+void cLEDText::Init(cLEDMatrixBase *Matrix, uint16_t Width, uint16_t Height, int16_t OriginX, int16_t OriginY)
 {
   m_Matrix = Matrix;
   m_XMin = OriginX;
@@ -72,7 +72,7 @@ void cTextScroller::Init(cLEDMatrixBase *Matrix, uint16_t Width, uint16_t Height
 }
 
 
-void cTextScroller::SetBackgroundMode(uint16_t Options, uint8_t Dimming)
+void cLEDText::SetBackgroundMode(uint16_t Options, uint8_t Dimming)
 {
   m_Options = (m_Options & (~BACKGND_MASK)) | (Options & BACKGND_MASK);
 	if ((m_Options & BACKGND_MASK) == BACKGND_DIMMING)
@@ -80,19 +80,19 @@ void cTextScroller::SetBackgroundMode(uint16_t Options, uint8_t Dimming)
 }
 
 
-void cTextScroller::SetScrollDirection(uint16_t Options)
+void cLEDText::SetScrollDirection(uint16_t Options)
 {
   m_Options = (m_Options & (~SCROLL_MASK)) | (Options & SCROLL_MASK);
 }
 
 
-void cTextScroller::SetTextDirection(uint16_t Options)
+void cLEDText::SetTextDirection(uint16_t Options)
 {
   m_Options = (m_Options & (~CHAR_MASK)) | (Options & CHAR_MASK);
 }
 
 
-void cTextScroller::SetTextColrOptions(uint16_t Options, uint8_t ColA1, uint8_t ColA2, uint8_t ColA3, uint8_t ColB1, uint8_t ColB2, uint8_t ColB3)
+void cLEDText::SetTextColrOptions(uint16_t Options, uint8_t ColA1, uint8_t ColA2, uint8_t ColA3, uint8_t ColB1, uint8_t ColB2, uint8_t ColB3)
 {
   m_Options = (m_Options & (~COLR_MASK)) | (Options & COLR_MASK);
   if ((m_Options & COLR_EMPTY) != COLR_EMPTY)
@@ -115,7 +115,7 @@ void cTextScroller::SetTextColrOptions(uint16_t Options, uint8_t ColA1, uint8_t 
 }
 
 
-void cTextScroller::SetText(unsigned char *Txt, uint16_t TxtSize)
+void cLEDText::SetText(unsigned char *Txt, uint16_t TxtSize)
 {
   m_pText = Txt;
   m_pSize = TxtSize;
@@ -125,7 +125,7 @@ void cTextScroller::SetText(unsigned char *Txt, uint16_t TxtSize)
 }
 
 
-void cTextScroller::DecodeOptions(uint16_t *tp, uint16_t *opt, uint8_t *backDim, uint8_t *col1, uint8_t *col2, uint8_t *colDim)
+void cLEDText::DecodeOptions(uint16_t *tp, uint16_t *opt, uint8_t *backDim, uint8_t *col1, uint8_t *col2, uint8_t *colDim)
 {
   switch (m_pText[*tp])
   {
@@ -203,7 +203,7 @@ void cTextScroller::DecodeOptions(uint16_t *tp, uint16_t *opt, uint8_t *backDim,
 }
 
 
-int cTextScroller::UpdateText()
+int cLEDText::UpdateText()
 {
 	uint8_t bDim, cDim, c1[3], c2[3], xbp;
 	int16_t x, y, MinY, MaxY;

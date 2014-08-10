@@ -1,7 +1,7 @@
 #include <FastLED.h>
 
 #include <LEDMatrix.h>
-#include <TextScroller.h>
+#include <LEDText.h>
 #include <FontMatrise.h>
 
 // Change the next 6 defines to match your matrix type and size
@@ -16,7 +16,7 @@
 
 cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
 
-cTextScroller ScrollingMsg;
+cLEDText ScrollingMsg;
 #define MESSAGE_WIDTH   68
 #define MESSAGE_HEIGHT  8
 #define MESSAGE_Y       0
@@ -39,7 +39,7 @@ const unsigned char TxtDemo[] = { EFFECT_SCROLL_LEFT "            LEFT SCROLL "
 void setup()
 {
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds[0], leds.Size());
-  FastLED.setBrightness(255);
+  FastLED.setBrightness(64);
   FastLED.clear(true);
   delay(500);
   FastLED.showColor(CRGB::Red);

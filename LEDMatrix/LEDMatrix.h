@@ -8,6 +8,8 @@ enum MatrixType_t { HORIZONTAL_MATRIX,
 
 class cLEDMatrixBase
 {
+  friend class cSprite;
+
 	protected:
 		int16_t m_Width, m_Height;
 		MatrixType_t m_Type;

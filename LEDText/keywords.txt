@@ -1,11 +1,11 @@
 #######################################
-# Syntax Coloring Map For TextScroller
+# Syntax Coloring Map For LEDText
 #######################################
 
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
-cTextScroller	KEYWORD1
+LEDText	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)

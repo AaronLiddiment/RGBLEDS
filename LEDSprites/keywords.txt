@@ -1,0 +1,58 @@
+#######################################
+# Syntax Coloring Map For LEDSprites
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+cSprite	KEYWORD1
+cLEDSprites	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+Setup	KEYWORD2
+Update	KEYWORD2
+Render	KEYWORD2
+SetPosition	KEYWORD2
+SetFrame	KEYWORD2
+SetMotion	KEYWORD2
+SetPositionFrameMotion	KEYWORD2
+GetXYFlags	KEYWORD2
+
+AddSprite	KEYWORD2
+IsSprite	KEYWORD2
+RemoveSprite	KEYWORD2
+ChangePriority	KEYWORD2
+UpdateSprites	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+B8_1BIT	LITERAL1
+B8_2BIT	LITERAL1
+B8_3BIT	LITERAL1
+B8_4BIT	LITERAL1
+_1BIT	LITERAL1
+_2BIT	LITERAL1
+_3BIT	LITERAL1
+_4BIT	LITERAL1
+SPR_FRONT	LITERAL1
+SPR_BACK	LITERAL1
+SPR_FORWARD	LITERAL1
+SPR_BACKWARD	LITERAL1
+SPRITE_X_EDGE	LITERAL1
+SPRITE_Y_EDGE	LITERAL1
+SPRITE_X_OFF	LITERAL1
+SPRITE_Y_OFF	LITERAL1
+SPRITE_XY_FLAGS_MASK	LITERAL1
+SPRITE_X_KEEPIN	LITERAL1
+SPRITE_Y_KEEPIN	LITERAL1
+SPRITE_KEEPIN_MASK	LITERAL1
+
+
+#######################################
+# Class public variables (LITERAL2)
+#######################################
+m_X	LITERAL2
+m_Y	LITERAL2

@@ -1,5 +1,5 @@
-#ifndef TextScroller_h
-#define TextScroller_h
+#ifndef LEDText_h
+#define LEDText_h
 
 #define  BACKGND_ERASE   0x0000
 #define  BACKGND_LEAVE   0x0001
@@ -62,7 +62,7 @@
 #define  EFFECT_COLR_EMPTY       "\xd0"
 #define  EFFECT_COLR_DIMMING     "\xe0"
 
-class cTextScroller
+class cLEDText
 {
   public:
     void SetFont(uint8_t FontW, uint8_t FontH, uint8_t ChBase, uint8_t ChUpper, const uint8_t *FontData);
