@@ -1,10 +1,20 @@
-cTextScroller Instructions
-==========================
+cLEDSprites Instructions
+========================
+Will be added soon I hope, for now see examples provided.
+
+
+cLEDMatrix Instructions
+========================
+Some info is provided below, will add more soon, see examples.
+
+
+cLEDText Instructions
+=====================
 
 
 Overview
 --------
-The aim of this class is to provide a flexible way of displaying static/scrolling
+The aim of this class is to provide a flexible way of displaying static or scrolling
 text on LED displays using the FastLED library.
 On each update it will fully render the visible window rather than shifting and
 updating just the new data, this makes it a frame based system allowing text to
@@ -20,7 +30,7 @@ In order to use the class you must have the following header files included in y
 
 	#include <FastLED.h>
 	#include <LEDMatrix.h>
-	#include <TextScroller.h>
+	#include <LEDText.h>
 
 You will also need some font data, which due to its size, is generally better to be
 placed in a header file. I have provided 2 font header files as a start. These are
@@ -44,9 +54,9 @@ using '[0]' after the matrix variable name and '.Size()' to obtain the number of
 
 	FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds[0], leds.Size());
 
-Then finally you can declare the cTextScroller variable:-
+Then finally you can declare the cLEDText class variable:-
 
-	cTextScroller ScrollingMsg;
+	cLEDText ScrollingMsg;
 
 
 
@@ -64,10 +74,10 @@ Example:-
 	ScrollingMsg.SetFont(MATRISE_WIDTH, MATRISE_HEIGHT, MATRISE_CHAR_LOW, MATRISE_CHAR_HIGH, MatriseData);
 
 
-Init(cLEDMatrix *Matrix, int16_t Width, int16_t Height, int16_t OriginX = 0, int16_t OriginY = 0)
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Init(cLEDMatrixBase *Matrix, int16_t Width, int16_t Height, int16_t OriginX = 0, int16_t OriginY = 0)
+-----------------------------------------------------------------------------------------------------
 This function should also be called as part of your setup routine and again must be called at
-least once for each instance of cTextScroller.	
+least once for each instance of cLEDText.	
 'Matrix' parameter should be a pointer to your cLEDMatrix instance.	
 'Width' and 'Height' are the dimensions of the area in which the text will be displayed.	
 'OriginX' and 'OriginY' are the matrix coordinates of the bottom left corner of the area.	
@@ -251,7 +261,7 @@ NOTES
 3) If your display area is taller than a single character height any partially rendered character at the right hand side
    will be skipped and the rendering will continue with the next whole character on the left hand side a "line" below.
    This is mainly useful for a SCROLL_UP/DOWN display. If multiple lines are required for a SCROLL_LEFT display it is
-   neccessary to use two instances of cTextScroller placed one over the other with their own text arrays.	
+   neccessary to use two instances of cLEDText placed one over the other with their own text arrays.	
 4) If you want left-right readable text when using SCROLL_RIGHT reverse the characters in your text array.	
 5) To just keep rendering static text, use SetText() and UpdateText() at the same time and ignore point 2).		
 6) I may in the future change the way a SCROLL direction change waits until all the text is off the display. This will
