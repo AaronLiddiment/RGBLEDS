@@ -12,17 +12,14 @@
 #define MATRIX_HEIGHT  15
 #define MATRIX_TYPE    HORIZONTAL_ZIGZAG_MATRIX
 
-#define NUM_LEDS  (MATRIX_WIDTH * MATRIX_HEIGHT)
-
-CRGB leds[NUM_LEDS];
-cLEDMatrix LEDMatrix(MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE, leds);;
+cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
 
 uint8_t hue;
 int16_t counter;
 
 void setup()
 {
-  FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
+  FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds[0], leds.Size());
   FastLED.setBrightness(255);
   FastLED.clear(true);
   delay(500);
@@ -59,7 +56,7 @@ void loop()
       y = sy;
       while ((x >= 0) && (y < MATRIX_HEIGHT))
       {
-        LEDMatrix.MatrixXY(x, y) = CHSV(h, 255, 255);
+        leds(x, y) = CHSV(h, 255, 255);
         x--;
         y++;
       }
@@ -76,7 +73,7 @@ void loop()
     for (y=0; y<MATRIX_HEIGHT; y++)
     {
       for (x=0; x<MATRIX_WIDTH; x++)
-        LEDMatrix.MatrixXY(x, y) = CHSV(h, 255, 255);
+        leds(x, y) = CHSV(h, 255, 255);
       h+=16;
     }
   }
@@ -85,23 +82,23 @@ void loop()
   if (counter < 125)
     ;
   else if (counter < 375)
-    LEDMatrix.HorizontalMirror();
+    leds.HorizontalMirror();
   else if (counter < 625)
-    LEDMatrix.VerticalMirror();
+    leds.VerticalMirror();
   else if (counter < 875)
-    LEDMatrix.QuadrantMirror();
+    leds.QuadrantMirror();
   else if (counter < 1125)
-    LEDMatrix.QuadrantRotateMirror();
+    leds.QuadrantRotateMirror();
   else if (counter < 1250)
     ;
   else if (counter < 1500)
-    LEDMatrix.TriangleTopMirror();
+    leds.TriangleTopMirror();
   else if (counter < 1750)
-    LEDMatrix.TriangleBottomMirror();
+    leds.TriangleBottomMirror();
   else if (counter < 2000)
-    LEDMatrix.QuadrantTopTriangleMirror();
+    leds.QuadrantTopTriangleMirror();
   else if (counter < 2250)
-    LEDMatrix.QuadrantBottomTriangleMirror();
+    leds.QuadrantBottomTriangleMirror();
 
   counter++;
   if (counter >= 2250)

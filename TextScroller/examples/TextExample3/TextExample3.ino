@@ -14,10 +14,7 @@
 #define MATRIX_HEIGHT  7
 #define MATRIX_TYPE    HORIZONTAL_ZIGZAG_MATRIX
 
-#define NUM_LEDS  (MATRIX_WIDTH * MATRIX_HEIGHT)
-
-CRGB leds[NUM_LEDS];
-cLEDMatrix LEDMatrix(MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE, leds);
+cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
 
 cTextScroller ScrollingMsg1, ScrollingMsg2;
 #define MESSAGE_WIDTH   68
@@ -40,7 +37,7 @@ void setup()
 {
   int16_t HalfWholeChars, WholeEvenChars;
 
-  FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
+  FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds[0], leds.Size());
   FastLED.setBrightness(255);
   FastLED.clear(true);
   delay(500);
@@ -58,9 +55,9 @@ void setup()
   ScrollingMsg2.SetFont(ROBOTRON_WIDTH, ROBOTRON_HEIGHT, ROBOTRON_CHAR_LOW, ROBOTRON_CHAR_HIGH, RobotronData);
 
   HalfWholeChars = (((MESSAGE_WIDTH / 2) + ROBOTRON_WIDTH) / (ROBOTRON_WIDTH + 1)) * (ROBOTRON_WIDTH + 1);
-  ScrollingMsg1.Init(&LEDMatrix, HalfWholeChars, MESSAGE_HEIGHT, (MESSAGE_WIDTH / 2) - HalfWholeChars, 0);
+  ScrollingMsg1.Init(&leds, HalfWholeChars, MESSAGE_HEIGHT, (MESSAGE_WIDTH / 2) - HalfWholeChars, 0);
   ScrollingMsg1.SetText((unsigned char *)TxtRainbowL, sizeof(TxtRainbowL) - 1);
-  ScrollingMsg2.Init(&LEDMatrix, HalfWholeChars, MESSAGE_HEIGHT, MESSAGE_WIDTH / 2, 0);
+  ScrollingMsg2.Init(&leds, HalfWholeChars, MESSAGE_HEIGHT, MESSAGE_WIDTH / 2, 0);
   ScrollingMsg2.SetText((unsigned char *)TxtRainbowR, sizeof(TxtRainbowR) - 1);
   while (ScrollingMsg1.UpdateText() == 0)
   {
@@ -70,10 +67,12 @@ void setup()
   }
 
   WholeEvenChars = ((MESSAGE_WIDTH + (ROBOTRON_WIDTH * 2) + 1) / ((ROBOTRON_WIDTH + 1) * 2)) * ((ROBOTRON_WIDTH + 1) * 2);
-  ScrollingMsg1.Init(&LEDMatrix, WholeEvenChars, (ROBOTRON_HEIGHT + 1) / 2, (MESSAGE_WIDTH - WholeEvenChars) / 2, (ROBOTRON_HEIGHT + 1) / 2, SCROLL_UP);
+  ScrollingMsg1.Init(&leds, WholeEvenChars, (ROBOTRON_HEIGHT + 1) / 2, (MESSAGE_WIDTH - WholeEvenChars) / 2, (ROBOTRON_HEIGHT + 1) / 2);
   ScrollingMsg1.SetText((unsigned char *)TxtRainbowDU, sizeof(TxtRainbowDU) - 1);
-  ScrollingMsg2.Init(&LEDMatrix, WholeEvenChars, (ROBOTRON_HEIGHT + 1) / 2, (MESSAGE_WIDTH - WholeEvenChars) / 2, 0, SCROLL_DOWN);
+  ScrollingMsg1.SetScrollDirection(SCROLL_UP);
+  ScrollingMsg2.Init(&leds, WholeEvenChars, (ROBOTRON_HEIGHT + 1) / 2, (MESSAGE_WIDTH - WholeEvenChars) / 2, 0);
   ScrollingMsg2.SetText((unsigned char *)TxtRainbowDU, sizeof(TxtRainbowDU) - 1);
+  ScrollingMsg2.SetScrollDirection(SCROLL_DOWN);
   while (ScrollingMsg1.UpdateText() == 0)
   {
     ScrollingMsg2.UpdateText();
@@ -81,7 +80,7 @@ void setup()
     delay(20);
   }
 
-  ScrollingMsg1.Init(&LEDMatrix, WholeEvenChars, MESSAGE_HEIGHT, (MESSAGE_WIDTH - WholeEvenChars) / 2, MESSAGE_Y);
+  ScrollingMsg1.Init(&leds, WholeEvenChars, MESSAGE_HEIGHT, (MESSAGE_WIDTH - WholeEvenChars) / 2, MESSAGE_Y);
   ScrollingMsg1.SetText((unsigned char *)PlasmaTxt, sizeof(PlasmaTxt) - 1);
 
   PlasmaShift = (random8(0, 5) * 32) + 64;
@@ -118,8 +117,7 @@ void HuePlasmaFrame(uint16_t Time)
     {
       r = sin16(Time) / 256;
       h = sin16(x * r * PLASMA_X_FACTOR + Time) + cos16(y * (-r) * PLASMA_Y_FACTOR + Time) + sin16(y * x * (cos16(-Time) / 256) / 2);
-      LEDMatrix.MatrixXY(x, y) = CHSV((h / 256) + 128, 255, 255);
+      leds(x, y) = CHSV((h / 256) + 128, 255, 255);
     }
   }
 }
-

@@ -14,10 +14,7 @@
 #define MATRIX_HEIGHT  7
 #define MATRIX_TYPE    HORIZONTAL_ZIGZAG_MATRIX
 
-#define NUM_LEDS  (MATRIX_WIDTH * MATRIX_HEIGHT)
-
-CRGB leds[NUM_LEDS];
-cLEDMatrix LEDMatrix(MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE, leds);
+cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
 
 cTextScroller ScrollingMsg;
 #define MESSAGE_WIDTH   68
@@ -41,7 +38,7 @@ const unsigned char TxtDemo[] = { EFFECT_SCROLL_LEFT "         LEFT SCROLL"
 
 void setup()
 {
-  FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
+  FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds[0], leds.Size());
   FastLED.setBrightness(255);
   FastLED.clear(true);
   delay(500);
@@ -56,8 +53,9 @@ void setup()
   FastLED.show();
 
   ScrollingMsg.SetFont(ROBOTRON_WIDTH, ROBOTRON_HEIGHT, ROBOTRON_CHAR_LOW, ROBOTRON_CHAR_HIGH, RobotronData);
-  ScrollingMsg.Init(&LEDMatrix, MESSAGE_WIDTH, MESSAGE_HEIGHT, 0, MESSAGE_Y);
+  ScrollingMsg.Init(&leds, MESSAGE_WIDTH, MESSAGE_HEIGHT, 0, MESSAGE_Y);
   ScrollingMsg.SetText((unsigned char *)TxtDemo, sizeof(TxtDemo) - 1);
+  ScrollingMsg.SetTextColrOptions(COLR_RGB | COLR_SINGLE, 0xff, 0x00, 0xff);
 }
 
 
@@ -69,4 +67,3 @@ void loop()
     FastLED.show();
   delay(10);
 }
-

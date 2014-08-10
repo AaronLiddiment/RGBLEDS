@@ -6,12 +6,13 @@
 # Datatypes (KEYWORD1)
 #######################################
 cLEDMatrix	KEYWORD1
+cLEDMatrixBase	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
-LEDArray	KEYWORD2
-MatrixXY	KEYWORD2
+mXY	KEYWORD2
+Size	KEYWORD2
 HorizontalMirror	KEYWORD2
 VerticalMirror	KEYWORD2
 QuadrantMirror	KEYWORD2

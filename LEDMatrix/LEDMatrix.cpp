@@ -1,5 +1,5 @@
 /*
-LEDMatrix class by Aaron Liddiment (c) 2014
+LEDMatrix V2 class by Aaron Liddiment (c) 2014
 
 Used by my TextScroller class and uses the 
 FastLED v2.1 library by Daniel Garcia and Mark Kriegsmann.
@@ -12,44 +12,29 @@ Written & tested on a Teensy 3.1
 #include <LEDMatrix.h>
 
 
-inline uint16_t cLEDMatrix::mXY(int16_t x, int16_t y)
+cLEDMatrixBase::cLEDMatrixBase()
 {
-  if (m_Type & 1)
-  { // Vertical Matrix
-    if ((m_Type & 2) && (x % 2))
-      return((((x + 1) * m_Height) - 1) - y);
-    else
-      return((x * m_Height) + y);
-  }
-  else
-  { // Horizontal Matrix
-    if ((m_Type & 2) && (y % 2))
-      return((((y + 1) * m_Width) - 1) - x);
-    else
-      return((y * m_Width) + x);
-  }
 }
 
-
-cLEDMatrix::cLEDMatrix(uint16_t Width, uint16_t Height, MatrixType_t Type, CRGB *LAry)
+int cLEDMatrixBase::Size()
 {
-  m_Width = Width;
-  m_Height = Height;
-  m_Type = Type;
-  m_MatrixLeds = LAry;
+  return(m_Width * m_Height);
 }
 
+struct CRGB* cLEDMatrixBase::operator[](int n)
+{
+  return(&m_LED[n]);
+}
 
-struct CRGB &cLEDMatrix::MatrixXY(int16_t x, int16_t y)
+struct CRGB& cLEDMatrixBase::operator()(int16_t x, int16_t y)
 {
   if ( (x >= 0) && (x < m_Width) && (y >= 0) && (y < m_Height))
-    return(m_MatrixLeds[mXY(x,y)]);
+    return(m_LED[mXY(x, y)]);
   else
     return(m_OutOfBounds);
 }
 
-
-void cLEDMatrix::HorizontalMirror(bool FullHeight)
+void cLEDMatrixBase::HorizontalMirror(bool FullHeight)
 {
   int ty, y, x, xx;
 
@@ -57,36 +42,36 @@ void cLEDMatrix::HorizontalMirror(bool FullHeight)
     ty = m_Height - 1;
   else
     ty = (m_Height / 2);
-  for (y=ty; y>=0; y--)
+  for (y=ty; y>=0; --y)
   {
-    for (x=(m_Width/2)-1,xx=((m_Width+1)/2); x>=0; x--,xx++)
-      m_MatrixLeds[mXY(xx, y)] = m_MatrixLeds[mXY(x, y)];
+    for (x=(m_Width/2)-1,xx=((m_Width+1)/2); x>=0; --x,++xx)
+      m_LED[mXY(xx, y)] = m_LED[mXY(x, y)];
   }
 }
 
 
-void cLEDMatrix::VerticalMirror()
+void cLEDMatrixBase::VerticalMirror()
 {
   int y, yy, x;
 
-  for (y=(m_Height/2)-1,yy=((m_Height+1)/2); y>=0; y--,yy++)
+  for (y=(m_Height/2)-1,yy=((m_Height+1)/2); y>=0; --y,++yy)
   {
-    for (x=m_Width-1; x>=0; x--)
-      m_MatrixLeds[mXY(x, yy)] = m_MatrixLeds[mXY(x, y)];
+    for (x=m_Width-1; x>=0; --x)
+      m_LED[mXY(x, yy)] = m_LED[mXY(x, y)];
   }
 }
 
 
-void cLEDMatrix::QuadrantMirror()
+void cLEDMatrixBase::QuadrantMirror()
 {
   HorizontalMirror(false);
   VerticalMirror();
 }
 
 
-void cLEDMatrix::QuadrantRotateMirror()
+void cLEDMatrixBase::QuadrantRotateMirror()
 {
-  int MaxXY, MidXY, x, y, xx, yy, src;
+  int MaxXY, MidXY, x, y, src;
 
   if (m_Width > m_Height)
     MaxXY = m_Height;
@@ -94,26 +79,20 @@ void cLEDMatrix::QuadrantRotateMirror()
     MaxXY = m_Width;
   MidXY = (MaxXY / 2);
   MaxXY--;
-  for (x=MidXY-(MaxXY%2); x>=0; x--)
+  for (x=MidXY-(MaxXY%2); x>=0; --x)
   {
-    for (y=MidXY-(MaxXY%2); y>=0; y--)
+    for (y=MidXY-(MaxXY%2); y>=0; --y)
     {
       src = mXY(x, y);
-      xx = MidXY + y;
-      yy = MidXY - (MaxXY % 2) - x;
-      m_MatrixLeds[mXY(xx, yy)] = m_MatrixLeds[src];
-      xx = MaxXY - x;
-      yy = MaxXY - y;
-      m_MatrixLeds[mXY(xx, yy)] = m_MatrixLeds[src];
-      xx = MidXY - (MaxXY % 2) - y;
-      yy = MidXY + x;
-      m_MatrixLeds[mXY(xx, yy)] = m_MatrixLeds[src];
+      m_LED[mXY(MidXY + y, MidXY - (MaxXY % 2) - x)] = m_LED[src];
+      m_LED[mXY(MaxXY - x, MaxXY - y)] = m_LED[src];
+      m_LED[mXY(MidXY - (MaxXY % 2) - y, MidXY + x)] = m_LED[src];
     }
   }
 }
 
 
-void cLEDMatrix::TriangleTopMirror(bool FullHeight)
+void cLEDMatrixBase::TriangleTopMirror(bool FullHeight)
 {
   int MaxXY, x, y;
 
@@ -123,15 +102,15 @@ void cLEDMatrix::TriangleTopMirror(bool FullHeight)
     MaxXY = m_Width - 1;
   if (! FullHeight)
     MaxXY /= 2;
-  for (y=1; y<=MaxXY; y++)
+  for (y=1; y<=MaxXY; ++y)
   {
-    for (x=0; x<y; x++)
-      m_MatrixLeds[mXY(y,x)] = m_MatrixLeds[mXY(x,y)];
+    for (x=0; x<y; ++x)
+      m_LED[mXY(y,x)] = m_LED[mXY(x,y)];
   }
 }
 
 
-void cLEDMatrix::TriangleBottomMirror(bool FullHeight)
+void cLEDMatrixBase::TriangleBottomMirror(bool FullHeight)
 {
   int MaxXY, x, y, xx, yy;
 
@@ -143,20 +122,20 @@ void cLEDMatrix::TriangleBottomMirror(bool FullHeight)
     MaxXY /= 2;
   for (y=0,xx=MaxXY; y<MaxXY; y++,xx--)
   {
-    for (x=MaxXY-y-1,yy=y+1; x>=0; x--,yy++)
-      m_MatrixLeds[mXY(xx,yy)] = m_MatrixLeds[mXY(x,y)];
+    for (x=MaxXY-y-1,yy=y+1; x>=0; --x,++yy)
+      m_LED[mXY(xx, yy)] = m_LED[mXY(x, y)];
   }
 }
 
 
-void cLEDMatrix::QuadrantTopTriangleMirror()
+void cLEDMatrixBase::QuadrantTopTriangleMirror()
 {
   TriangleTopMirror(false);
   QuadrantMirror();
 }
 
 
-void cLEDMatrix::QuadrantBottomTriangleMirror()
+void cLEDMatrixBase::QuadrantBottomTriangleMirror()
 {
   TriangleBottomMirror(false);
   QuadrantMirror();

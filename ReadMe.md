@@ -32,14 +32,17 @@ to make this clearer in the code, such as:-
 
 	#define MATRIX_WIDTH   68
 	#define MATRIX_HEIGHT  7
-	#define MATRIX_ZIGZAG  true
-	#define NUM_LEDS       (MATRIX_WIDTH * MATRIX_HEIGHT)
+	#define MATRIX_TYPE    HORIZONTAL_ZIGZAG_MATRIX
 
-You also have to declare the FastLED LED array, as a pointer to this array is required
-by the cLEDMatrix class:-
+	cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
 
-	CRGB leds[NUM_LEDS];
-	cLEDMatrix LEDMatrix(MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_ZIGZAG, leds);
+There are four matrix types which are delcared at the top of the LEDMatrix header file.
+Also if your wired matrix origin is not bottom left you can use negative width and/or height
+values to shift the origin.
+The LED array is allocated in the matrix class but the address of the array can be obtained by
+using '[0]' after the matrix variable name and '.Size()' to obtain the number of LED's:-
+
+	FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds[0], leds.Size());
 
 Then finally you can declare the cTextScroller variable:-
 
@@ -61,22 +64,46 @@ Example:-
 	ScrollingMsg.SetFont(MATRISE_WIDTH, MATRISE_HEIGHT, MATRISE_CHAR_LOW, MATRISE_CHAR_HIGH, MatriseData);
 
 
-Init(cLEDMatrix *Matrix, int16_t Width, int16_t Height, int16_t OriginX = 0, int16_t OriginY = 0, uint16_t Flags = (BACKGND_ERASE | CHAR_UP | SCROLL_LEFT | COLR_RGB))
+Init(cLEDMatrix *Matrix, int16_t Width, int16_t Height, int16_t OriginX = 0, int16_t OriginY = 0)
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 This function should also be called as part of your setup routine and again must be called at
 least once for each instance of cTextScroller.	
 'Matrix' parameter should be a pointer to your cLEDMatrix instance.	
 'Width' and 'Height' are the dimensions of the area in which the text will be displayed.	
 'OriginX' and 'OriginY' are the matrix coordinates of the bottom left corner of the area.	
-'Flags' allows you to set a few options to start with such as Background mode, Character
-direction and Scroll direction. These options are listed in the first part of the TextScoller
-header file.	
 NOTE: The dimensions and origin provided here are independent of the LED Matrix size, they can
 be smaller to restrict text to a portion of the display or larger to allow control over where
 the text stops when using Delay control codes. The default colour mode is bright white, RGB.	
 Example:-
 
 	ScrollingMsg.Init(&LEDMatrix, MESSAGE_WIDTH, MESSAGE_HEIGHT, MESSAGE_X, MESSAGE_Y);
+
+
+SetBackgroundMode(uint16_t Options, uint8_t Dimming = 0x00);
+------------------------------------------------------------
+This function allows you to set the background mode and optionally if the mode is BACKGND_DIMMING,
+the dimming amount (BACKGND_ERASE, BACKGND_LEAVE, BACKGND_DIMMING).
+
+
+SetScrollDirection(uint16_t Options);
+-------------------------------------
+This function allows you to set the scrolling direction (SCROLL_LEFT, SCROLL_RIGHT, SCROLL_UP, SCROLL_DOWN)
+
+
+SetTextDirection(uint16_t Options);
+-----------------------------------
+This function allows you to set the character direction (CHAR_UP, CHAR_DOWN, CHAR_LEFT, CHAR_RIGHT)
+
+
+SetTextColrOptions(uint16_t Options, uint8_t ColA1 = 0xff, uint8_t ColA2 = 0xff, uint8_t ColA3 = 0xff, uint8_t ColB1 = 0xff, uint8_t ColB2 = 0xff, uint8_t ColB3 = 0xff);
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+This function allows you to set the text mode and colour. You can use a combination of the defines for
+flexible colour control (COLR_RGB, COLR_HSV, COLR_GRAD_CV, COLR_GRAD_AV, COLR_GRAD_CH, COLR_GRAD_AH).
+If you are just setting single colour mode you only need to provide the first three unit8_t's.
+There are two other colours modes (COLR_EMPTY, COLR_DIMMING). The EMPTY one will leave any '1' bits in
+the font data untouched allowing the background to show through and the DIMMING one will dim those '1'
+bits to ColA1 percent and as such is the only unit8_t that needs to be supplied when specifying the
+DIMMING option.
 
 
 SetText(unsigned char *Txt, uint16_t TxtSize)

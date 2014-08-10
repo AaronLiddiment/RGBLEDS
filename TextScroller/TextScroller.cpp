@@ -1,5 +1,5 @@
 /*
-TextScroller class by Aaron Liddiment (c) 2014
+TextScroller V2 class by Aaron Liddiment (c) 2014
 
 Uses my LEDMatrix class and especially the 
 FastLED v2.1 library by Daniel Garcia and Mark Kriegsmann.
@@ -11,19 +11,6 @@ Even the basic examples need 19k rom & 5k ram
 #include <FastLED.h>
 #include <LEDMatrix.h>
 #include <TextScroller.h>
-
-#define  COLR_SINGLE     0x0000
-#define  COLR_GRAD       0x0080
-#define  COLR_CHAR       0x0000
-#define  COLR_AREA       0x0100
-#define  COLR_VERT       0x0000
-#define  COLR_HORI       0x0200
-#define  COLR_EMPTY      0x0400
-#define  COLR_DIMMING    0x0800
-#define  COLR_GRAD_CV    (COLR_GRAD | COLR_CHAR | COLR_VERT)
-#define  COLR_GRAD_AV    (COLR_GRAD | COLR_AREA | COLR_VERT)
-#define  COLR_GRAD_CH    (COLR_GRAD | COLR_CHAR | COLR_HORIZ)
-#define  COLR_GRAD_AH    (COLR_GRAD | COLR_AREA | COLR_HORIZ)
 
 #define  BACKGND_MASK    (BACKGND_ERASE | BACKGND_LEAVE | BACKGND_DIMMING)
 #define  CHAR_MASK       (CHAR_UP | CHAR_DOWN | CHAR_LEFT | CHAR_RIGHT)
@@ -70,18 +57,61 @@ void cTextScroller::SetFont(uint8_t FontW, uint8_t FontH, uint8_t ChBase, uint8_
 }
 
 
-void cTextScroller::Init(cLEDMatrix *Matrix, int16_t Width, int16_t Height, int16_t OriginX, int16_t OriginY, uint16_t Flags)
+void cTextScroller::Init(cLEDMatrixBase *Matrix, uint16_t Width, uint16_t Height, int16_t OriginX, int16_t OriginY)
 {
   m_Matrix = Matrix;
   m_XMin = OriginX;
   m_YMin = OriginY;
   m_XMax = OriginX + Width - 1;
   m_YMax = OriginY + Height - 1;
-  m_Options = Flags;
+  m_Options = (BACKGND_ERASE | CHAR_UP | SCROLL_LEFT | COLR_RGB);
   m_Col1[0] = m_Col1[1] = m_Col1[2] = 255;
   m_LastDelayTP = m_DelayCounter = 0;
   m_FrameRate = 0;
   Initialised = true;
+}
+
+
+void cTextScroller::SetBackgroundMode(uint16_t Options, uint8_t Dimming)
+{
+  m_Options = (m_Options & (~BACKGND_MASK)) | (Options & BACKGND_MASK);
+	if ((m_Options & BACKGND_MASK) == BACKGND_DIMMING)
+		m_BackDim = Dimming;
+}
+
+
+void cTextScroller::SetScrollDirection(uint16_t Options)
+{
+  m_Options = (m_Options & (~SCROLL_MASK)) | (Options & SCROLL_MASK);
+}
+
+
+void cTextScroller::SetTextDirection(uint16_t Options)
+{
+  m_Options = (m_Options & (~CHAR_MASK)) | (Options & CHAR_MASK);
+}
+
+
+void cTextScroller::SetTextColrOptions(uint16_t Options, uint8_t ColA1, uint8_t ColA2, uint8_t ColA3, uint8_t ColB1, uint8_t ColB2, uint8_t ColB3)
+{
+  m_Options = (m_Options & (~COLR_MASK)) | (Options & COLR_MASK);
+  if ((m_Options & COLR_EMPTY) != COLR_EMPTY)
+  {
+	  if ((m_Options & COLR_DIMMING) == COLR_DIMMING)
+	  	m_ColDim = ColA1;
+	  else
+  	{
+		  if ((m_Options & COLR_GRAD) == COLR_GRAD)
+		  {
+		  	m_Col2[0] = ColB1;
+		  	m_Col2[1] = ColB2;
+		  	m_Col2[2] = ColB3;
+		  }
+	  	m_Col1[0] = ColA1;
+	  	m_Col1[1] = ColA2;
+	  	m_Col1[2] = ColA3;
+  	}
+  }
 }
 
 
@@ -175,15 +205,14 @@ void cTextScroller::DecodeOptions(uint16_t *tp, uint16_t *opt, uint8_t *backDim,
 
 int cTextScroller::UpdateText()
 {
-	uint8_t bDim, cDim, c1[3], c2[3], v[3], bf, xbp, xbpmax, xgap;
+	uint8_t bDim, cDim, c1[3], c2[3], xbp;
 	int16_t x, y, MinY, MaxY;
-	uint16_t opt, oldopt, tp, fract, MfractAV, MfractAH, MfractCV, MfractCH, fdo;
-	int i;
+	uint16_t opt, tp;
 
 	if (m_TextPos >= m_pSize)
 		return(-1);
-	MfractAV = 65535 / ((m_YMax - m_YMin) + 1);
-	MfractAH = 65535 / ((m_XMax - m_XMin) + 1);
+	uint16_t MfractAV = 65535 / ((m_YMax - m_YMin) + 1);
+	uint16_t MfractAH = 65535 / ((m_XMax - m_XMin) + 1);
 	if (m_DelayCounter == 0)
 	{
 		if (Initialised == true)
@@ -255,7 +284,7 @@ int cTextScroller::UpdateText()
 		{
 			if ( (tp < m_pSize) && ((m_pText[tp] < m_FontBase) || (m_pText[tp] > m_FontUpper)) )
 			{
-				oldopt = opt;
+				uint16_t oldopt = opt;
 				DecodeOptions(&tp, &opt, &bDim, c1, c2, &cDim);
 				tp++;
 				if ((oldopt & SCROLL_MASK) != (opt & SCROLL_MASK))
@@ -267,7 +296,8 @@ int cTextScroller::UpdateText()
 			}
 			else
 			{
-				fdo = (m_pText[tp] - m_FontBase) * m_FontHeight;
+				uint8_t xbpmax, bf, xgap;
+				uint16_t fdo = (m_pText[tp] - m_FontBase) * m_FontHeight;
 				if ( ((opt & CHAR_MASK) == CHAR_UP) || ((opt & CHAR_MASK) == CHAR_DOWN) )
 				{
 					if ((opt & SCROLL_MASK) == SCROLL_DOWN)
@@ -319,8 +349,8 @@ int cTextScroller::UpdateText()
 					xgap = 0;
 				else
 					xgap = xbpmax;
-				MfractCV = 65535 / (MaxY - MinY);
-				MfractCH = 65535 / xbpmax;
+				uint16_t MfractCV = 65535 / (MaxY - MinY);
+				uint16_t MfractCH = 65535 / xbpmax;
 				y = MinY - 1;
 				while (y <= MaxY)
 				{
@@ -331,13 +361,15 @@ int cTextScroller::UpdateText()
 							if ((opt & COLR_MASK) != COLR_EMPTY)
 							{
 								if ((opt & COLR_MASK) == COLR_DIMMING)
-									m_Matrix->MatrixXY(x, y) %= cDim;
+									(*m_Matrix)(x, y).nscale8(cDim);
 								else
 								{
+									uint8_t v[3];
 									if ((opt & COLR_GRAD) == COLR_SINGLE)
 										memcpy(v, c1, sizeof(v));
 									else
 									{
+										uint16_t fract;
 										if ((opt & (COLR_AREA | COLR_HORI)) == (COLR_CHAR | COLR_VERT))
 											fract = (y - MinY) * MfractCV;
 										else if ((opt & (COLR_AREA | COLR_HORI)) == (COLR_AREA | COLR_VERT))
@@ -346,7 +378,7 @@ int cTextScroller::UpdateText()
 											fract = xbp * MfractCH;
 										else if ((opt & (COLR_AREA | COLR_HORI)) == (COLR_AREA | COLR_HORI))
 											fract = (x - m_XMin) * MfractAH;
-										for (i=0; i<3; i++)
+										for (int i=0; i<3; i++)
 										{
 											if (c1[i] <= c2[i])
 												v[i] = lerp16by16(c1[i]<<8, c2[i]<<8, fract) >> 8;
@@ -355,53 +387,53 @@ int cTextScroller::UpdateText()
 										}
 									}
 									if ((opt & COLR_HSV) == COLR_RGB)
-										m_Matrix->MatrixXY(x, y) = CRGB(v[0], v[1], v[2]);
+										(*m_Matrix)(x, y) = CRGB(v[0], v[1], v[2]);
 									else
-										m_Matrix->MatrixXY(x, y) = CHSV(v[0], v[1], v[2]);
+										(*m_Matrix)(x, y) = CHSV(v[0], v[1], v[2]);
 								}
 							}
 						}
 						else if ((opt & BACKGND_MASK) == BACKGND_ERASE)
-							m_Matrix->MatrixXY(x, y) = CRGB(0, 0, 0);
+							(*m_Matrix)(x, y) = CRGB(0, 0, 0);
 						else if ((opt & BACKGND_MASK) == BACKGND_DIMMING)
-							m_Matrix->MatrixXY(x, y) %= bDim;
+							(*m_Matrix)(x, y).nscale8(bDim);
 					}
 					if ((y >= MinY) && (xbp != xgap))
 					{
 						if ((opt & CHAR_MASK) == CHAR_UP)
-							fdo--;
+							--fdo;
 						else if ((opt & CHAR_MASK) == CHAR_DOWN)
-							fdo++;
+							++fdo;
 						else if ((opt & CHAR_MASK) == CHAR_LEFT)
 							bf >>= 1;
 						else if ((opt & CHAR_MASK) == CHAR_RIGHT)
 							bf <<= 1;
 					}
-					y++;
+					++y;
 				}
-				xbp++;
+				++xbp;
 				if (xbp > xbpmax)
 				{
 					xbp = 0;
-					tp++;
+					++tp;
 				}
 				if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
 				{
-					x--;
+					--x;
 					if ((tp == m_pSize) && (xbp > 0))
-						tp++;
+						++tp;
 				}
 				else
 				{
-					x++;
+					++x;
 					if (tp == m_pSize)
-						tp++;
+						++tp;
 				}
 			}
 		}
 		while ((x >= m_XMin) && (x <= m_XMax) && (tp <= m_pSize));
 		if (xbp != 0)
-			tp++;
+			++tp;
 		if (m_EOLtp == 0)
 			m_EOLtp = tp;
 		if ((opt & SCROLL_MASK) == SCROLL_DOWN)
