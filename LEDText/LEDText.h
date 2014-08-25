@@ -36,7 +36,7 @@
 #define  EFFECT_BACKGND_ERASE    "\x80"
 #define  EFFECT_BACKGND_LEAVE    "\x81"
 #define  EFFECT_BACKGND_DIMMING  "\x82"
-#define  EFFECT_FRAME_RATE   		 "\x84"
+#define  EFFECT_FRAME_RATE       "\x84"
 #define  EFFECT_DELAY_FRAMES     "\x85"
 
 #define  EFFECT_SCROLL_LEFT      "\x90"
@@ -67,10 +67,10 @@ class cLEDText
   public:
     void SetFont(uint8_t FontW, uint8_t FontH, uint8_t ChBase, uint8_t ChUpper, const uint8_t *FontData);
     void Init(cLEDMatrixBase *Matrix, uint16_t Width, uint16_t Height, int16_t OriginX = 0, int16_t OriginY = 0);
-		void SetBackgroundMode(uint16_t Options, uint8_t Dimming = 0x00);
-		void SetScrollDirection(uint16_t Options);
-		void SetTextDirection(uint16_t Options);
-		void SetTextColrOptions(uint16_t Options, uint8_t ColA1 = 0xff, uint8_t ColA2 = 0xff, uint8_t ColA3 = 0xff, uint8_t ColB1 = 0xff, uint8_t ColB2 = 0xff, uint8_t ColB3 = 0xff);
+    void SetBackgroundMode(uint16_t Options, uint8_t Dimming = 0x00);
+    void SetScrollDirection(uint16_t Options);
+    void SetTextDirection(uint16_t Options);
+    void SetTextColrOptions(uint16_t Options, uint8_t ColA1 = 0xff, uint8_t ColA2 = 0xff, uint8_t ColA3 = 0xff, uint8_t ColB1 = 0xff, uint8_t ColB2 = 0xff, uint8_t ColB3 = 0xff);
     void SetText(unsigned char *Txt, uint16_t TxtSize);
     int UpdateText();
   private:

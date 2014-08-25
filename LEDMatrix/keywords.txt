@@ -13,6 +13,8 @@ cLEDMatrixBase	KEYWORD1
 #######################################
 mXY	KEYWORD2
 Size	KEYWORD2
+Width	KEYWORD2
+Height	KEYWORD2
 HorizontalMirror	KEYWORD2
 VerticalMirror	KEYWORD2
 QuadrantMirror	KEYWORD2
@@ -21,6 +23,15 @@ TriangleTopMirror	KEYWORD2
 TriangleBottomMirror	KEYWORD2
 QuadrantTopTriangleMirror	KEYWORD2
 QuadrantBottomTriangleMirror	KEYWORD2
+DrawLine	KEYWORD2
+DrawRectangle	KEYWORD2
+DrawCircle	KEYWORD2
+DrawFilledRectangle	KEYWORD2
+DrawFilledCircle	KEYWORD2
+ShiftLeft	KEYWORD2
+ShiftRight	KEYWORD2
+ShiftDown	KEYWORD2
+ShiftUp	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
