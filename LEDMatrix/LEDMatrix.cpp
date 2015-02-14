@@ -1,11 +1,10 @@
 /*
-LEDMatrix V3 class by Aaron Liddiment (c) 2014
+LEDMatrix V3 class by Aaron Liddiment (c) 2015
 
-Used by my TextScroller class and uses the 
-FastLED v2.1 library by Daniel Garcia and Mark Kriegsmann.
-Inspiration for some of the Matrix functions by Stefan Petrick
+Inspiration for some of the Matrix functions from Stefan Petrick
 
-Written & tested on a Teensy 3.1
+FastLED v3.1 library by Daniel Garcia and Mark Kriegsmann.
+Written & tested on a Teensy 3.1 using Arduino V1.0.5r2 & teensyduino V1.20
 */
 
 #include <FastLED.h>

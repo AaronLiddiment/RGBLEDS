@@ -9,7 +9,7 @@
 #define COLOR_ORDER    GRB
 #define CHIPSET        WS2812B
 
-#define MATRIX_WIDTH   50
+#define MATRIX_WIDTH   80
 #define MATRIX_HEIGHT  10
 #define MATRIX_TYPE    HORIZONTAL_MATRIX
 
@@ -28,7 +28,7 @@ const uint8_t ShapeData[] =
 };
 struct CRGB ColTable[1] = { CRGB(64, 128, 255) };
 cLEDSprites Sprites(&leds);
-cSprite Shape(SHAPE_WIDTH, SHAPE_HEIGHT, ShapeData, 1, _1BIT, ColTable);
+cSprite Shape(SHAPE_WIDTH, SHAPE_HEIGHT, ShapeData, 1, _1BIT, ColTable, ShapeData);
 
 
 void setup()
@@ -47,7 +47,7 @@ void setup()
   delay(1000);
   FastLED.show();
 
-  Shape.SetPositionFrameMotion(0/*X*/, 0/*Y*/, 0/*Frame*/, 0/*FrameRate*/, +1/*XChange*/, 1/*XChangeRate*/, +1/*YChange*/, 1/*YChangeRate*/, SPRITE_X_KEEPIN | SPRITE_Y_KEEPIN);
+  Shape.SetPositionFrameMotionOptions(0/*X*/, 0/*Y*/, 0/*Frame*/, 0/*FrameRate*/, +1/*XChange*/, 1/*XRate*/, +1/*YChange*/, 1/*YRate*/, SPRITE_DETECT_EDGE | SPRITE_X_KEEPIN | SPRITE_Y_KEEPIN);
   Sprites.AddSprite(&Shape);
 }
 
@@ -56,7 +56,7 @@ void loop()
 {
   FastLED.clear();
   Sprites.UpdateSprites();
+  Sprites.RenderSprites();
   FastLED.show();
   delay(50);
 }
-

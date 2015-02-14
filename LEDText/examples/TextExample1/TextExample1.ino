@@ -17,9 +17,6 @@
 cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
 
 cLEDText ScrollingMsg;
-#define MESSAGE_WIDTH   68
-#define MESSAGE_HEIGHT  8
-#define MESSAGE_Y       0
 
 const unsigned char TxtDemo[] = { EFFECT_SCROLL_LEFT "            LEFT SCROLL "
                                   EFFECT_SCROLL_RIGHT "            LLORCS THGIR"
@@ -52,8 +49,8 @@ void setup()
   delay(1000);
   FastLED.show();
 
-  ScrollingMsg.SetFont(MATRISE_WIDTH, MATRISE_HEIGHT, MATRISE_CHAR_LOW, MATRISE_CHAR_HIGH, MatriseData);
-  ScrollingMsg.Init(&leds, MESSAGE_WIDTH, MESSAGE_HEIGHT, 0, MESSAGE_Y);
+  ScrollingMsg.SetFont(MatriseFontData);
+  ScrollingMsg.Init(&leds, leds.Width(), ScrollingMsg.FontHeight() + 1, 0, 0);
   ScrollingMsg.SetText((unsigned char *)TxtDemo, sizeof(TxtDemo) - 1);
   ScrollingMsg.SetTextColrOptions(COLR_RGB | COLR_SINGLE, 0xff, 0x00, 0xff);
 }

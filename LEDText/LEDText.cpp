@@ -1,11 +1,12 @@
 /*
-LEDText V3 class by Aaron Liddiment (c) 2014
+LEDText V3 class by Aaron Liddiment (c) 2015
 
 Uses my LEDMatrix class and especially the 
-FastLED v2.1 library by Daniel Garcia and Mark Kriegsmann.
 
-Written & tested on a Teensy 3.1
-Even the basic examples need 19k rom & 5k ram 
+FastLED v3.1 library by Daniel Garcia and Mark Kriegsmann.
+Written & tested on a Teensy 3.1 using Arduino V1.0.5r2 & teensyduino V1.20
+
+Even the basic examples need 12k rom & 4k ram 
 */
 
 #include <FastLED.h>
@@ -47,13 +48,14 @@ Even the basic examples need 19k rom & 5k ram
 #define  UC_COLR_DIMMING       0xe0
 
 
-void cLEDText::SetFont(uint8_t FontW, uint8_t FontH, uint8_t ChBase, uint8_t ChUpper, const uint8_t *FontData)
+void cLEDText::SetFont(const uint8_t *FontData)
 {
-  m_FontWidth = FontW;
-  m_FontHeight = FontH;
-  m_FontBase = ChBase;
-  m_FontUpper = ChUpper;
-  m_FontData = FontData;
+  m_FontWidth = FontData[0];
+  m_FontHeight = FontData[1];
+  m_FontBase = FontData[2];
+  m_FontUpper = FontData[3];
+  m_FontData = &FontData[4];
+  m_FWBytes = (m_FontWidth + 7) / 8;
 }
 
 
@@ -112,6 +114,18 @@ void cLEDText::SetTextColrOptions(uint16_t Options, uint8_t ColA1, uint8_t ColA2
       m_Col1[2] = ColA3;
     }
   }
+}
+
+
+void cLEDText::SetFrameRate(uint8_t Rate)
+{
+	m_FrameRate = Rate;
+}
+
+
+void cLEDText::SetOptionsChangeMode(uint16_t Options)
+{
+  m_Options = (m_Options & (~INSTANT_OPTIONS_MODE)) | (Options & INSTANT_OPTIONS_MODE);
 }
 
 
@@ -287,9 +301,12 @@ int cLEDText::UpdateText()
         uint16_t oldopt = opt;
         DecodeOptions(&tp, &opt, &bDim, c1, c2, &cDim);
         tp++;
-        if ((oldopt & SCROLL_MASK) != (opt & SCROLL_MASK))
+        if ((m_Options & INSTANT_OPTIONS_MODE) == INSTANT_OPTIONS_MODE)
+          opt = (opt & (~SCROLL_MASK)) | (oldopt & SCROLL_MASK);
+        else if ((oldopt & SCROLL_MASK) != (opt & SCROLL_MASK))
         {
-          m_EOLtp = tp;
+          if (m_EOLtp == 0)
+            m_EOLtp = tp;
           tp = m_pSize;
           opt = oldopt;
         }
@@ -297,7 +314,7 @@ int cLEDText::UpdateText()
       else
       {
         uint8_t xbpmax, bf, xgap;
-        uint16_t fdo = (m_pText[tp] - m_FontBase) * m_FontHeight;
+        uint16_t fdo = (m_pText[tp] - m_FontBase) * m_FontHeight * m_FWBytes;
         if ( ((opt & CHAR_MASK) == CHAR_UP) || ((opt & CHAR_MASK) == CHAR_DOWN) )
         {
           if ((opt & SCROLL_MASK) == SCROLL_DOWN)
@@ -308,17 +325,29 @@ int cLEDText::UpdateText()
           if ((opt & CHAR_MASK) == CHAR_UP)
           {
             if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
-              bf = 1 << (xbp - 1);
+            {
+              bf = 0x80 >> ((m_FontWidth - xbp) % 8);
+              fdo += ((m_FontWidth - xbp) / 8);
+            }
             else
-              bf = 1 << (m_FontWidth - xbp - 1);
-            fdo += (m_FontHeight - 1);
+            {
+              bf = 0x80 >> (xbp % 8);
+              fdo += (xbp / 8);
+            }
+            fdo += ((m_FontHeight - 1) * m_FWBytes);
           }
           else
           {
             if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
-              bf = 1 << (m_FontWidth - xbp);
+            {
+              bf = 0x80 >> ((xbp - 1) % 8);
+              fdo += ((xbp - 1) / 8);
+            }
             else
-              bf = 1 << xbp;
+            {
+              bf = 0x80 >> (((m_FontWidth - xbp) - 1) % 8);
+              fdo += (((m_FontWidth - xbp) - 1) / 8);
+            }
           }
         }
         else
@@ -330,19 +359,20 @@ int cLEDText::UpdateText()
           xbpmax = m_FontHeight;
           if ((opt & CHAR_MASK) == CHAR_LEFT)
           {
-            bf = 1 << (m_FontWidth - 1);
+            bf = 0x80;
             if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
-              fdo += (m_FontHeight - xbp);
+              fdo += ((m_FontHeight - xbp) * m_FWBytes);
             else
-              fdo += xbp;
+              fdo += (xbp * m_FWBytes);
           }
           else
           {
-            bf = 0x01;
+            bf = 0x80 >> ((m_FontWidth - 1) % 8);
+            fdo += ((m_FontWidth - 1) / 8);
             if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
-              fdo += (xbp - 1);
+              fdo += ((xbp - 1) * m_FWBytes);
             else
-              fdo += (m_FontHeight - xbp - 1);
+              fdo += ((m_FontHeight - xbp - 1) * m_FWBytes);
           }
         }
         if ( ((opt & SCROLL_MASK) == SCROLL_RIGHT) || (tp >= m_pSize) )
@@ -393,21 +423,42 @@ int cLEDText::UpdateText()
                 }
               }
             }
-            else if ((opt & BACKGND_MASK) == BACKGND_ERASE)
-              (*m_Matrix)(x, y) = CRGB(0, 0, 0);
-            else if ((opt & BACKGND_MASK) == BACKGND_DIMMING)
-              (*m_Matrix)(x, y).nscale8(bDim);
+            else if ( (((opt & SCROLL_MASK) == SCROLL_DOWN) && ( (MinY <= m_YMin) || (y >= MinY)))
+                      || (((opt & SCROLL_MASK) != SCROLL_DOWN) && ( (MaxY >= m_YMax) || (y < MaxY))) )
+            // Fix for double dimming/blanking of blank vertical gap lines
+            {
+              if ((opt & BACKGND_MASK) == BACKGND_ERASE)
+                (*m_Matrix)(x, y) = CRGB(0, 0, 0);
+              else if ((opt & BACKGND_MASK) == BACKGND_DIMMING)
+                (*m_Matrix)(x, y).nscale8(bDim);
+            }
           }
           if ((y >= MinY) && (xbp != xgap))
           {
             if ((opt & CHAR_MASK) == CHAR_UP)
-              --fdo;
+              fdo -= m_FWBytes;
             else if ((opt & CHAR_MASK) == CHAR_DOWN)
-              ++fdo;
+              fdo += m_FWBytes;
             else if ((opt & CHAR_MASK) == CHAR_LEFT)
-              bf >>= 1;
+            {
+              if (bf == 0x01)
+              {
+                bf = 0x80;
+                fdo++;
+              }
+              else
+                bf >>= 1;
+            }
             else if ((opt & CHAR_MASK) == CHAR_RIGHT)
-              bf <<= 1;
+            {
+              if (bf == 0x80)
+              {
+                bf = 0x01;
+                fdo--;
+              }
+              else
+                bf <<= 1;
+            }
           }
           ++y;
         }
@@ -444,11 +495,11 @@ int cLEDText::UpdateText()
       y = m_YMin - 1;
   }
   while ((y >= m_YMin) && (y <= m_YMax) && (tp < m_pSize));
-  if ((xbp == 0) && (tp < m_pSize) && ((m_pText[tp] < m_FontBase) || (m_pText[tp] > m_FontUpper)) )
-    DecodeOptions(&tp, &opt, &bDim, c1, c2, &cDim);
   if (m_DelayCounter > 0)
     m_DelayCounter--;
   else if (m_FrameRate > 0)
     m_DelayCounter = m_FrameRate;
+  if ( (m_Options & INSTANT_OPTIONS_MODE) && (tp > m_pSize) && ( ((y >= m_YMin) && (y <= m_YMax)) || ((x >= m_XMin) && (x <= m_XMax)) ) )
+    return(-1);
   return(0);
 }

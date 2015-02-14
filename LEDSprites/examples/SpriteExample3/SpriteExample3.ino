@@ -9,7 +9,7 @@
 #define COLOR_ORDER    GRB
 #define CHIPSET        WS2812B
 
-#define MATRIX_WIDTH   50
+#define MATRIX_WIDTH   80
 #define MATRIX_HEIGHT  10
 #define MATRIX_TYPE    HORIZONTAL_MATRIX
 
@@ -26,6 +26,16 @@ const uint8_t SquareData[] =
   B8_2BIT(12333210),
   B8_2BIT(12333210),
   B8_2BIT(12222210),
+  B8_2BIT(11111110)
+};
+const uint8_t SquareMask[] = 
+{
+  B8_2BIT(11111110),
+  B8_2BIT(11111110),
+  B8_2BIT(11111110),
+  B8_2BIT(11111110),
+  B8_2BIT(11111110),
+  B8_2BIT(11111110),
   B8_2BIT(11111110)
 };
 cLEDSprites Sprites(&leds);
@@ -53,7 +63,6 @@ void setup()
   delay(1000);
   FastLED.show();
 
-
   int16_t x = MATRIX_WIDTH - SQUARE_WIDTH - 1, y = 0;
   int8_t xc = -1, yc = 1;
   NumSquares = 0;
@@ -61,8 +70,8 @@ void setup()
   {
     for (int i=0; i<NUM_COLS; i++)
       ColTabs[NumSquares][i] = CHSV(NumSquares * 32, 255, 127 + (i * 64));
-    Shape[NumSquares].Setup(SQUARE_WIDTH, SQUARE_HEIGHT, SquareData, 1, _2BIT, ColTabs[NumSquares]);
-    Shape[NumSquares].SetPositionFrameMotion(x, y, 0, 0, xc, 2, 0, 0, SPRITE_X_KEEPIN);
+    Shape[NumSquares].Setup(SQUARE_WIDTH, SQUARE_HEIGHT, SquareData, 1, _2BIT, ColTabs[NumSquares], SquareMask);
+    Shape[NumSquares].SetPositionFrameMotionOptions(x, y, 0, 0, xc, 2, 0, 0, SPRITE_DETECT_EDGE | SPRITE_X_KEEPIN);
     Sprites.AddSprite(&Shape[NumSquares]);
     ++NumSquares;
     x += (((SQUARE_WIDTH * 5) / 3) * xc);
@@ -84,15 +93,12 @@ void loop()
   Sprites.UpdateSprites();
   for (int i=0; i<NumSquares; i++)
   {
-    if (Shape[i].GetXYFlags() & SPRITE_X_EDGE)
-    {
-      if (Shape[i].m_X == 0)
-        Sprites.ChangePriority(&Shape[i], SPR_FRONT);
-      else
-        Sprites.ChangePriority(&Shape[i], SPR_BACK);
-    }
+    if (Shape[i].GetFlags() & SPRITE_EDGE_X_MAX)
+      Sprites.ChangePriority(&Shape[i], SPR_BACK);
+    else if (Shape[i].GetFlags() & SPRITE_EDGE_X_MIN)
+      Sprites.ChangePriority(&Shape[i], SPR_FRONT);
   }
+  Sprites.RenderSprites();
   FastLED.show();
   delay(25);
 }
-

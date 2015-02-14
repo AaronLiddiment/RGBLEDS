@@ -9,7 +9,7 @@
 #define COLOR_ORDER    GRB
 #define CHIPSET        WS2812B
 
-#define MATRIX_WIDTH   50
+#define MATRIX_WIDTH   80
 #define MATRIX_HEIGHT  10
 #define MATRIX_TYPE    HORIZONTAL_MATRIX
 
@@ -31,6 +31,19 @@ const uint8_t RainbowData[] =
   B8_3BIT(12345670),B8_3BIT(07654321),
   B8_3BIT(12345670),B8_3BIT(07654321),
 };
+const uint8_t RainbowMask[] = 
+{
+  B8_1BIT(01111111),B8_1BIT(11111110),
+  B8_1BIT(11111111),B8_1BIT(11111111),
+  B8_1BIT(11111111),B8_1BIT(11111111),
+  B8_1BIT(11111111),B8_1BIT(11111111),
+  B8_1BIT(11111111),B8_1BIT(11111111),
+  B8_1BIT(11111111),B8_1BIT(11111111),
+  B8_1BIT(11111111),B8_1BIT(11111111),
+  B8_1BIT(11111111),B8_1BIT(11111111),
+  B8_1BIT(11111110),B8_1BIT(01111111),
+  B8_1BIT(11111110),B8_1BIT(01111111),
+};
 struct CRGB RainbowColTable[7] = { CHSV(216, 255, 255), CHSV(180, 255, 255), CHSV(144, 255, 255), CHSV(108, 255, 255), CHSV(72, 255, 255), CHSV(36, 255, 255), CHSV(0, 255, 255) };
 
 #define SHAPE_WIDTH    5
@@ -46,8 +59,8 @@ const uint8_t ShapeData[] =
 struct CRGB ShapeColTable[1] = { CRGB(255, 255, 255) };
 
 cLEDSprites Sprites(&leds);
-cSprite Rainbow(RAINBOW_WIDTH, RAINBOW_HEIGHT, RainbowData, 1, _3BIT, RainbowColTable);
-cSprite Shape(SHAPE_WIDTH, SHAPE_HEIGHT, ShapeData, 1, _1BIT, ShapeColTable);
+cSprite Rainbow(RAINBOW_WIDTH, RAINBOW_HEIGHT, RainbowData, 1, _3BIT, RainbowColTable, RainbowMask);
+cSprite Shape(SHAPE_WIDTH, SHAPE_HEIGHT, ShapeData, 1, _1BIT, ShapeColTable, ShapeData);
 
 
 void setup()
@@ -66,10 +79,10 @@ void setup()
   delay(1000);
   FastLED.show();
 
-  Rainbow.SetPositionFrameMotion((MATRIX_WIDTH - RAINBOW_WIDTH) / 2/*X*/, (MATRIX_HEIGHT - RAINBOW_HEIGHT) / 2/*Y*/, 0/*Frame*/, 0/*FrameRate*/, 0/*XChange*/, 0/*XChangeRate*/, 0/*YChange*/, 0/*YChangeRate*/);
+  Rainbow.SetPositionFrameMotionOptions((MATRIX_WIDTH - RAINBOW_WIDTH) / 2/*X*/, (MATRIX_HEIGHT - RAINBOW_HEIGHT) / 2/*Y*/, 0/*Frame*/, 0/*FrameRate*/, 0/*XChange*/, 0/*XRate*/, 0/*YChange*/, 0/*YRate*/);
   Sprites.AddSprite(&Rainbow);
 
-  Shape.SetPositionFrameMotion(0/*X*/, 0/*Y*/, 0/*Frame*/, 0/*FrameRate*/, +1/*XChange*/, 1/*XChangeRate*/, +1/*YChange*/, 2/*YChangeRate*/, SPRITE_X_KEEPIN | SPRITE_Y_KEEPIN);
+  Shape.SetPositionFrameMotionOptions(0/*X*/, 0/*Y*/, 0/*Frame*/, 0/*FrameRate*/, +1/*XChange*/, 1/*XRate*/, +1/*YChange*/, 2/*YRate*/, SPRITE_DETECT_EDGE | SPRITE_X_KEEPIN | SPRITE_Y_KEEPIN);
   Sprites.AddSprite(&Shape);
 }
 
@@ -78,7 +91,7 @@ void loop()
 {
   FastLED.clear();
   Sprites.UpdateSprites();
+  Sprites.RenderSprites();
   FastLED.show();
   delay(50);
 }
-

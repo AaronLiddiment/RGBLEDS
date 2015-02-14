@@ -5,7 +5,7 @@
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
-LEDText	KEYWORD1
+cLEDText	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -16,8 +16,12 @@ SetBackgroundMode	KEYWORD2
 SetScrollDirection	KEYWORD2
 SetTextDirection	KEYWORD2
 SetTextColrOptions	KEYWORD2
+SetFrameRate	KEYWORD2
+SetOptionsChangeMode	KEYWORD2
 SetText	KEYWORD2
 UpdateText	KEYWORD2
+FontWidth	KEYWORD2
+FontHeight	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
@@ -47,6 +51,7 @@ COLR_GRAD_CH	LITERAL1
 COLR_GRAD_AH	LITERAL1
 COLR_EMPTY	LITERAL1
 COLR_DIMMING	LITERAL1
+INSTANT_OPTIONS_MODE	LITERAL1
 EFFECT_BACKGND_ERASE	LITERAL1
 EFFECT_BACKGND_LEAVE	LITERAL1
 EFFECT_BACKGND_DIMMING	LITERAL1
@@ -72,3 +77,6 @@ EFFECT_RGB_AH	LITERAL1
 EFFECT_HSV_AH	LITERAL1
 EFFECT_COLR_EMPTY	LITERAL1
 EFFECT_COLR_DIMMING	LITERAL1
+B8	LITERAL1
+B16	LITERAL1
+B24	LITERAL1

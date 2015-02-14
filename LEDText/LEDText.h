@@ -33,6 +33,8 @@
 #define  COLR_EMPTY      0x0400
 #define  COLR_DIMMING    0x0800
 
+#define  INSTANT_OPTIONS_MODE    0x1000
+
 #define  EFFECT_BACKGND_ERASE    "\x80"
 #define  EFFECT_BACKGND_LEAVE    "\x81"
 #define  EFFECT_BACKGND_DIMMING  "\x82"
@@ -62,22 +64,41 @@
 #define  EFFECT_COLR_EMPTY       "\xd0"
 #define  EFFECT_COLR_DIMMING     "\xe0"
 
+
+/* Binary constant generator macro By Tom Torfs - donated to the public domain */
+/* All macro's evaluate to compile-time constants */
+#ifndef HEX__
+	#define HEX__(n) 0x##n##LU
+#endif
+#ifndef B8__
+	#define B8__(x) ((x&0x0000000FLU)?1:0) +((x&0x000000F0LU)?2:0) +((x&0x00000F00LU)?4:0) +((x&0x0000F000LU)?8:0) \
+									+((x&0x000F0000LU)?16:0) +((x&0x00F00000LU)?32:0) +((x&0x0F000000LU)?64:0) +((x&0xF0000000LU)?128:0)
+	#define B8(d1)				((uint8_t)B8__(HEX__(d1)))
+	#define B16(d1,d2)		((uint8_t)B8__(HEX__(d1))),((uint8_t)B8__(HEX__(d2)))
+	#define B24(d1,d2,d3)	((uint8_t)B8__(HEX__(d1))),((uint8_t)B8__(HEX__(d2))),((uint8_t)B8__(HEX__(d3))))
+#endif
+
+
 class cLEDText
 {
   public:
-    void SetFont(uint8_t FontW, uint8_t FontH, uint8_t ChBase, uint8_t ChUpper, const uint8_t *FontData);
+    void SetFont(const uint8_t *FontData);
     void Init(cLEDMatrixBase *Matrix, uint16_t Width, uint16_t Height, int16_t OriginX = 0, int16_t OriginY = 0);
     void SetBackgroundMode(uint16_t Options, uint8_t Dimming = 0x00);
     void SetScrollDirection(uint16_t Options);
     void SetTextDirection(uint16_t Options);
     void SetTextColrOptions(uint16_t Options, uint8_t ColA1 = 0xff, uint8_t ColA2 = 0xff, uint8_t ColA3 = 0xff, uint8_t ColB1 = 0xff, uint8_t ColB2 = 0xff, uint8_t ColB3 = 0xff);
+    void SetFrameRate(uint8_t Rate);
+    void SetOptionsChangeMode(uint16_t Options);
     void SetText(unsigned char *Txt, uint16_t TxtSize);
     int UpdateText();
+    uint8_t FontWidth()  { return(m_FontWidth); };
+    uint8_t FontHeight() { return(m_FontHeight); };
   private:
     void DecodeOptions(uint16_t *tp, uint16_t *opt, uint8_t *backDim, uint8_t *col1, uint8_t *col2, uint8_t *colDim);
 
     cLEDMatrixBase *m_Matrix;
-    uint8_t m_FontWidth, m_FontHeight, m_FontBase, m_FontUpper;
+    uint8_t m_FontWidth, m_FontHeight, m_FontBase, m_FontUpper, m_FWBytes;
     const uint8_t *m_FontData;
     int16_t m_XMin, m_XMax, m_YMin, m_YMax;
     unsigned char *m_pText;

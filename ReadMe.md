@@ -1,11 +1,178 @@
 cLEDSprites Instructions
 ========================
-Will be added soon I hope, for now see examples provided.
+
+
+Overview
+--------
+This class allows you to define sprite shapes using 1, 3, 7 or 15 colour palettes.
+The drawing order can be controlled and each sprite can be given its own automatic
+motion with options to allow the sprite to be kept in the display area.
+Collisions between sprites and display edge detection have also been implemented.
+Also multiple images can be set for each sprite with automatic change controls
+allowing easy animation.
+
+
+
+Initialise
+----------
+In order to use the class you must have the following header files included in your program:-
+
+	#include <FastLED.h>
+	#include <LEDMatrix.h>
+	#include <LEDSprites.h>
+
+You must declare an instance of the cLEDMatrix class as this is used to modify the
+LED data according to the matrix dimensions and layout.
+
+	cLEDMatrix<32, 16, HORIZONTAL_ZIGZAG_MATRIX> leds;
+
+The LED array is allocated in the matrix class but the address of the array can be obtained by
+using '[0]' after the matrix variable name and '.Size()' to obtain the number of LED's:-
+
+	FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds[0], leds.Size());
+
+Then finally you can declare the cLEDSprites class variable:-
+
+	cLEDSprites Sprites(&leds);
+
+This class is the control class for the Sprites whereas cSprite is the class for defining
+individual sprites that can then be registered and used using the cLEDSprites class.
+
+	cSprite Shape(SHAPE_WIDTH, SHAPE_HEIGHT, ShapeData, 1, _1BIT, ColTable, ShapeData);
+
+THERE IS FAR MORE TO BE WRITTEN HERE, BUT FOR NOW HAVE A LOOK AT THE EXAMPLES PROVIDED ;-)
+
 
 
 cLEDMatrix Instructions
 ========================
-Some info is provided below, will add more soon, see examples.
+
+
+Overview
+--------
+This class aims to make using a matrix of LED's much simpler by allowing you to use
+x and y to access it. It also copes with many wiring schemes while still allowing
+(0,0) to be defined as any of the corners. Plus it adds several mirroring and
+primitive line and shape drawing functions.
+
+
+
+Initialise
+----------
+In order to use the class you must have the following header files included in your program:-
+
+	#include <FastLED.h>
+	#include <LEDMatrix.h>
+
+You must declare an instance of the cLEDMatrix class as this is used to modify the
+LED data according to the matrix dimensions and layout. Personally I use defines to
+make this clearer in the code, such as:-
+
+	#define MATRIX_WIDTH   68
+	#define MATRIX_HEIGHT  7
+	#define MATRIX_TYPE    HORIZONTAL_ZIGZAG_MATRIX
+
+	cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
+
+There are four matrix types which are delcared at the top of the LEDMatrix header file.
+HORIZONTAL_MATRIX, VERTICAL_MATRIX, HORIZONTAL_ZIGZAG_MATRIX and VERTICAL_ZIGZAG_MATRIX.
+If your wired origin is not in the corner that you would like as (0, 0) you can make the
+appropriate dimension negative to reverse that axis.
+The LED array is allocated in the matrix class but the address of the array can be obtained by
+using '[0]' after the matrix variable name and '.Size()' to obtain the number of LED's:-
+
+	FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds[0], leds.Size());
+
+
+
+Functions
+=========
+
+int Size();
+-----------
+Returns the total number of LEDs.
+
+
+int Width();
+------------
+Returns the matrix width.
+
+
+CRGB *matrix[x]
+---------------
+Returns the memory address of the LED x.
+
+
+CRGB &matrix(x, y)
+------------------
+Allows you to set an LED with a CRGB colour value.
+
+
+HorizontalMirror();
+-------------------
+Mirrors the matrix horizontally.
+
+
+VerticalMirror();
+-----------------
+Mirrors the matrix vertically.
+
+
+QuadrantMirror();
+-----------------
+Mirrors the matrix bottom left quadrant to the other three.
+
+
+QuadrantRotateMirror();
+-----------------------
+Rotates the matrix bottom left quadrant to the other three.
+
+
+TriangleTopMirror();
+--------------------
+Mirrors the matrix upper left corner to the bottom right corner.
+
+
+TriangleBottomMirror();
+-----------------------
+Mirrors the matrix bottom left corner to the top right corner.
+
+
+QuadrantTopTriangleMirror();
+----------------------------
+Mirrors the matrix bottom left corner quadrants upper left corner to its bottom right corner.
+
+
+QuadrantBottomTriangleMirror();
+-------------------------------
+Mirrors the matrix bottom left corner quadrants bottom left corner to its upper right corner.
+
+
+DrawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB Col);
+-------------------------------------------------------------------
+Draws a line from (x0, y0) to (x1, y1) with Col.
+
+
+DrawRectangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB Col);
+------------------------------------------------------------------------
+Draws a rectangle (x0, y0) to (x1, y1) with Col.
+
+
+DrawCircle(int16_t xc, int16_t yc, uint16_t r, CRGB Col);
+---------------------------------------------------------
+Draws a circle with center (xc, yc) and a radius of r with Col.
+
+
+DrawFilledRectangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB Col);
+------------------------------------------------------------------------
+Draws a filled rectangle (x0, y0) to (x1, y1) with Col.
+
+
+DrawFilledCircle(int16_t xc, int16_t yc, uint16_t r, CRGB Col);
+---------------------------------------------------------
+Draws a filled circle with center (xc, yc) and a radius of r with Col.
+
+
 
 
 cLEDText Instructions
@@ -19,8 +186,10 @@ text on LED displays using the FastLED library.
 On each update it will fully render the visible window rather than shifting and
 updating just the new data, this makes it a frame based system allowing text to
 be overlaid on other patterns/effects.
-There is currently a limit on the font width to 8 pixels but the height is not
-limited.
+Version 3 now removes the 8 pixel font width limit. Note that the font bits must now
+be defined from the MSB down so for a 12 pixel font 0xff 0xf0 are the bits used. Also
+the first four 8 bit values in the font data array specify the width, height, base char
+and uppper char, which makes font changes easier.
 
 
 
@@ -37,18 +206,10 @@ placed in a header file. I have provided 2 font header files as a start. These a
 FontMatrise.h and FontRobotron.h and will be covered further in the Functions bit.
 
 You must then declare an instance of the cLEDMatrix class as this is used to modify
-the LED data according to the matrix dimensions and layout. Personally I use defines
-to make this clearer in the code, such as:-
+the LED data according to the matrix dimensions and layout.
 
-	#define MATRIX_WIDTH   68
-	#define MATRIX_HEIGHT  7
-	#define MATRIX_TYPE    HORIZONTAL_ZIGZAG_MATRIX
+	cLEDMatrix<64, 8, HORIZONTAL_ZIGZAG_MATRIX> leds;
 
-	cLEDMatrix<MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_TYPE> leds;
-
-There are four matrix types which are delcared at the top of the LEDMatrix header file.
-Also if your wired matrix origin is not bottom left you can use negative width and/or height
-values to shift the origin.
 The LED array is allocated in the matrix class but the address of the array can be obtained by
 using '[0]' after the matrix variable name and '.Size()' to obtain the number of LED's:-
 
@@ -63,19 +224,29 @@ Then finally you can declare the cLEDText class variable:-
 Functions
 =========
 
-SetFont(uint8_t FontW, uint8_t FontH, uint8_t ChBase, uint8_t ChUpper, const uint8_t *FontData)
------------------------------------------------------------------------------------------------
+SetFont(const uint8_t *FontData);
+---------------------------------
 This function should be called as part of your setup routine and must be called at least once
 for each instance of cTextScroller, but may be called at any time to change the font.	
-I have provided 2 font header files to get you started as mentioned above.	
+I have provided 3 font header files to get you started as mentioned above.	
 Example:-
 
 	#include <FontMatrise.h>
-	ScrollingMsg.SetFont(MATRISE_WIDTH, MATRISE_HEIGHT, MATRISE_CHAR_LOW, MATRISE_CHAR_HIGH, MatriseData);
+	ScrollingMsg.SetFont(MatriseFontData);
 
 
-Init(cLEDMatrixBase *Matrix, int16_t Width, int16_t Height, int16_t OriginX = 0, int16_t OriginY = 0)
------------------------------------------------------------------------------------------------------
+FontWidth();
+------------
+Returns the selected font width as a uint8_t
+
+
+FontHeight();
+-------------
+Returns the selected font height as a uint8_t
+
+
+Init(cLEDMatrixBase *Matrix, int16_t Width, int16_t Height, int16_t OriginX = 0, int16_t OriginY = 0);
+------------------------------------------------------------------------------------------------------
 This function should also be called as part of your setup routine and again must be called at
 least once for each instance of cLEDText.	
 'Matrix' parameter should be a pointer to your cLEDMatrix instance.	
@@ -116,8 +287,8 @@ bits to ColA1 percent and as such is the only unit8_t that needs to be supplied 
 DIMMING option.
 
 
-SetText(unsigned char *Txt, uint16_t TxtSize)
----------------------------------------------
+SetText(unsigned char *Txt, uint16_t TxtSize);
+----------------------------------------------
 This function is called to set the unsigned 8 bit array that contains the text and control codes.	
 The 'TxtSize' parameter is needed as zero values can occur in the array when using control codes.	
 NOTE: If your text array is statically initialised, use the 'const' keyword in its delcaration
@@ -128,8 +299,8 @@ Example:-
 	ScrollingMsg.SetText((unsigned char *)TxtDemo, sizeof(TxtDemo) - 1);
 
 
-int UpdateText()
-----------------
+int UpdateText();
+-----------------
 This function is called repeatedly to render the text data into the LED matrix. Each call
 advances the frame by 1 pixel in the chosen scroll direction.	
 If the frame has been rendered the return code will be '0'.	
@@ -143,6 +314,14 @@ Example:-
 		ScrollingMsg.SetText((unsigned char *)TxtDemo, sizeof(TxtDemo) - 1);
 		ScrollingMsg.UpdateText();
 	}
+
+
+int SetOptionsChangeMode(INSTANT_OPTIONS_MODE);
+-----------------------------------------------
+By default the LEDText routine will scroll text off the display area before implementing any
+change in scroll direction caused by a control code. If this function is called with the
+INSTANT_OPTIONS_MODE define this behaviour is changed and the delay is removed. Example 4
+demonstrates this usage. Calling this function with a '0' will reset to default behaviour.
 
 
 
@@ -264,5 +443,3 @@ NOTES
    neccessary to use two instances of cLEDText placed one over the other with their own text arrays.	
 4) If you want left-right readable text when using SCROLL_RIGHT reverse the characters in your text array.	
 5) To just keep rendering static text, use SetText() and UpdateText() at the same time and ignore point 2).		
-6) I may in the future change the way a SCROLL direction change waits until all the text is off the display. This will
-   make the class more flexible but will need you to add blank spaces before SCROLL changes in existing projects.
