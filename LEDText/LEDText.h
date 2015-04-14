@@ -1,6 +1,8 @@
 #ifndef LEDText_h
 #define LEDText_h
 
+#define  FONT_PROPORTIONAL  0x80
+
 #define  BACKGND_ERASE   0x0000
 #define  BACKGND_LEAVE   0x0001
 #define  BACKGND_DIMMING 0x0002
@@ -98,7 +100,7 @@ class cLEDText
     void DecodeOptions(uint16_t *tp, uint16_t *opt, uint8_t *backDim, uint8_t *col1, uint8_t *col2, uint8_t *colDim);
 
     cLEDMatrixBase *m_Matrix;
-    uint8_t m_FontWidth, m_FontHeight, m_FontBase, m_FontUpper, m_FWBytes;
+    uint8_t m_FontWidth, m_FontHeight, m_FontBase, m_FontUpper, m_FWBytes, m_FCBytes;
     const uint8_t *m_FontData;
     int16_t m_XMin, m_XMax, m_YMin, m_YMax;
     unsigned char *m_pText;
@@ -106,7 +108,7 @@ class cLEDText
     uint8_t m_XBitPos, m_YBitPos;
     uint8_t m_BackDim, m_ColDim, m_Col1[3], m_Col2[3], m_FrameRate;
     uint16_t m_LastDelayTP, m_DelayCounter;
-    bool Initialised;
+    bool m_FProp, Initialised;
 };
 
 #endif

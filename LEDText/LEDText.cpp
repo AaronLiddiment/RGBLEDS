@@ -1,5 +1,5 @@
 /*
-LEDText V3 class by Aaron Liddiment (c) 2015
+LEDText V4 class by Aaron Liddiment (c) 2015
 
 Uses my LEDMatrix class and especially the 
 
@@ -50,12 +50,24 @@ Even the basic examples need 12k rom & 4k ram
 
 void cLEDText::SetFont(const uint8_t *FontData)
 {
-  m_FontWidth = FontData[0];
   m_FontHeight = FontData[1];
   m_FontBase = FontData[2];
   m_FontUpper = FontData[3];
   m_FontData = &FontData[4];
+  if ((FontData[0] & FONT_PROPORTIONAL) == FONT_PROPORTIONAL)
+  {
+    m_FontWidth = FontData[0] & 0x7f;
+    m_FCBytes = 1;
+    m_FProp = true;
+  }
+  else
+  {
+    m_FontWidth = FontData[0];
+    m_FCBytes = 0;
+    m_FProp = false;
+  }
   m_FWBytes = (m_FontWidth + 7) / 8;
+  m_FCBytes += (m_FWBytes * m_FontHeight);
 }
 
 
@@ -221,24 +233,29 @@ int cLEDText::UpdateText()
 {
   uint8_t bDim, cDim, c1[3], c2[3], xbp;
   int16_t x, y, MinY, MaxY;
-  uint16_t opt, tp;
+  uint16_t opt, tp, MfractAV, MfractAH;
 
   if (m_TextPos >= m_pSize)
     return(-1);
-  uint16_t MfractAV = 65535 / ((m_YMax - m_YMin) + 1);
-  uint16_t MfractAH = 65535 / ((m_XMax - m_XMin) + 1);
+  MfractAV = 65535 / ((m_YMax - m_YMin) + 1);
+  MfractAH = 65535 / ((m_XMax - m_XMin) + 1);
   if (m_DelayCounter == 0)
   {
     if (Initialised == true)
       Initialised = false;
     else
     {
+      uint8_t fw;
+      if (m_FProp == true)
+        fw = m_FontData[(m_pText[m_TextPos] - m_FontBase) * m_FCBytes];
+      else
+      	fw = m_FontWidth;
       if (((m_Options & SCROLL_MASK) == SCROLL_LEFT) || ((m_Options & SCROLL_MASK) == SCROLL_RIGHT))
       {
         m_XBitPos++;
         if ( ((m_Options & CHAR_MASK) == CHAR_UP) || ((m_Options & CHAR_MASK) == CHAR_DOWN) )
         {
-          if (m_XBitPos > m_FontWidth)
+          if (m_XBitPos > fw)
             m_XBitPos = 0;
         }
         else
@@ -259,7 +276,7 @@ int cLEDText::UpdateText()
         }
         else
         {
-          if (m_YBitPos > m_FontWidth)
+          if (m_YBitPos > fw)
             m_YBitPos = 0;
         }
       }
@@ -313,154 +330,169 @@ int cLEDText::UpdateText()
       }
       else
       {
-        uint8_t xbpmax, bf, xgap;
-        uint16_t fdo = (m_pText[tp] - m_FontBase) * m_FontHeight * m_FWBytes;
-        if ( ((opt & CHAR_MASK) == CHAR_UP) || ((opt & CHAR_MASK) == CHAR_DOWN) )
+        uint8_t fw, xbpmax;
+        uint16_t fdo = (m_pText[tp] - m_FontBase) * m_FCBytes;
+        if (m_FProp == true)
+          fw = m_FontData[fdo++];
+        else
+          fw = m_FontWidth;
+        if ((x < 0) || (x >= (*m_Matrix).Width()))
         {
-          if ((opt & SCROLL_MASK) == SCROLL_DOWN)
-            MaxY = MinY + m_FontHeight;
+          if ( ((opt & CHAR_MASK) == CHAR_UP) || ((opt & CHAR_MASK) == CHAR_DOWN) )
+            xbpmax = fw;
           else
-            MinY = MaxY - m_FontHeight;
-          xbpmax = m_FontWidth;
-          if ((opt & CHAR_MASK) == CHAR_UP)
-          {
-            if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
-            {
-              bf = 0x80 >> ((m_FontWidth - xbp) % 8);
-              fdo += ((m_FontWidth - xbp) / 8);
-            }
-            else
-            {
-              bf = 0x80 >> (xbp % 8);
-              fdo += (xbp / 8);
-            }
-            fdo += ((m_FontHeight - 1) * m_FWBytes);
-          }
-          else
-          {
-            if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
-            {
-              bf = 0x80 >> ((xbp - 1) % 8);
-              fdo += ((xbp - 1) / 8);
-            }
-            else
-            {
-              bf = 0x80 >> (((m_FontWidth - xbp) - 1) % 8);
-              fdo += (((m_FontWidth - xbp) - 1) / 8);
-            }
-          }
+            xbpmax = m_FontHeight;
         }
         else
         {
-          if ((opt & SCROLL_MASK) == SCROLL_DOWN)
-            MaxY = MinY + m_FontWidth;
-          else
-            MinY = MaxY - m_FontWidth;
-          xbpmax = m_FontHeight;
-          if ((opt & CHAR_MASK) == CHAR_LEFT)
+          uint8_t bf, xgap;
+          if ( ((opt & CHAR_MASK) == CHAR_UP) || ((opt & CHAR_MASK) == CHAR_DOWN) )
           {
-            bf = 0x80;
-            if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
-              fdo += ((m_FontHeight - xbp) * m_FWBytes);
+            if ((opt & SCROLL_MASK) == SCROLL_DOWN)
+              MaxY = MinY + m_FontHeight;
             else
-              fdo += (xbp * m_FWBytes);
-          }
-          else
-          {
-            bf = 0x80 >> ((m_FontWidth - 1) % 8);
-            fdo += ((m_FontWidth - 1) / 8);
-            if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
-              fdo += ((xbp - 1) * m_FWBytes);
-            else
-              fdo += ((m_FontHeight - xbp - 1) * m_FWBytes);
-          }
-        }
-        if ( ((opt & SCROLL_MASK) == SCROLL_RIGHT) || (tp >= m_pSize) )
-          xgap = 0;
-        else
-          xgap = xbpmax;
-        uint16_t MfractCV = 65535 / (MaxY - MinY);
-        uint16_t MfractCH = 65535 / xbpmax;
-        y = MinY - 1;
-        while (y <= MaxY)
-        {
-          if ((y >= m_YMin) && (y <= m_YMax))
-          {
-            if ( (xbp != xgap) && (y >= MinY) && (y < MaxY) && ((m_FontData[fdo] & bf) != 0x00) )
+              MinY = MaxY - m_FontHeight;
+            xbpmax = fw;
+            if ((opt & CHAR_MASK) == CHAR_UP)
             {
-              if ((opt & COLR_MASK) != COLR_EMPTY)
+              if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
               {
-                if ((opt & COLR_MASK) == COLR_DIMMING)
-                  (*m_Matrix)(x, y).nscale8(cDim);
-                else
+                bf = 0x80 >> ((fw - xbp) % 8);
+                fdo += ((fw - xbp) / 8);
+              }
+              else
+              {
+                bf = 0x80 >> (xbp % 8);
+                fdo += (xbp / 8);
+              }
+              fdo += ((m_FontHeight - 1) * m_FWBytes);
+            }
+            else
+            {
+              if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
+              {
+                bf = 0x80 >> ((xbp - 1) % 8);
+                fdo += ((xbp - 1) / 8);
+              }
+              else
+              {
+                bf = 0x80 >> (((fw - xbp) - 1) % 8);
+                fdo += (((fw - xbp) - 1) / 8);
+              }
+            }
+          }
+          else
+          {
+            if ((opt & SCROLL_MASK) == SCROLL_DOWN)
+              MaxY = MinY + fw;
+            else
+              MinY = MaxY - fw;
+            xbpmax = m_FontHeight;
+            if ((opt & CHAR_MASK) == CHAR_LEFT)
+            {
+              bf = 0x80;
+              if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
+                fdo += ((m_FontHeight - xbp) * m_FWBytes);
+              else
+                fdo += (xbp * m_FWBytes);
+            }
+            else
+            {
+              bf = 0x80 >> ((fw - 1) % 8);
+              fdo += ((fw - 1) / 8);
+              if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
+                fdo += ((xbp - 1) * m_FWBytes);
+              else
+                fdo += ((m_FontHeight - xbp - 1) * m_FWBytes);
+            }
+          }
+          if ( ((opt & SCROLL_MASK) == SCROLL_RIGHT) || (tp >= m_pSize) )
+            xgap = 0;
+          else
+            xgap = xbpmax;
+          uint16_t MfractCV = 65535 / (MaxY - MinY);
+          uint16_t MfractCH = 65535 / xbpmax;
+          y = MinY - 1;
+          while (y <= MaxY)
+          {
+            if ((y >= 0) && (y < (*m_Matrix).Height()))
+            {
+              if ( (xbp != xgap) && (y >= MinY) && (y < MaxY) && ((m_FontData[fdo] & bf) != 0x00) )
+              {
+                if ((opt & COLR_MASK) != COLR_EMPTY)
                 {
-                  uint8_t v[3];
-                  if ((opt & COLR_GRAD) == COLR_SINGLE)
-                    memcpy(v, c1, sizeof(v));
+                  if ((opt & COLR_MASK) == COLR_DIMMING)
+                    (*m_Matrix)(x, y).nscale8(cDim);
                   else
                   {
-                    uint16_t fract;
-                    if ((opt & (COLR_AREA | COLR_HORI)) == (COLR_CHAR | COLR_VERT))
-                      fract = (y - MinY) * MfractCV;
-                    else if ((opt & (COLR_AREA | COLR_HORI)) == (COLR_AREA | COLR_VERT))
-                      fract = (y - m_YMin) * MfractAV;
-                    else if ((opt & (COLR_AREA | COLR_HORI)) == (COLR_CHAR | COLR_HORI))
-                      fract = xbp * MfractCH;
-                    else if ((opt & (COLR_AREA | COLR_HORI)) == (COLR_AREA | COLR_HORI))
-                      fract = (x - m_XMin) * MfractAH;
-                    for (int i=0; i<3; i++)
+                    uint8_t v[3];
+                    if ((opt & COLR_GRAD) == COLR_SINGLE)
+                      memcpy(v, c1, sizeof(v));
+                    else
                     {
-                      if (c1[i] <= c2[i])
-                        v[i] = lerp16by16(c1[i]<<8, c2[i]<<8, fract) >> 8;
-                      else
-                        v[i] = lerp16by16(c2[i]<<8, c1[i]<<8, ~fract) >> 8;
+                      uint16_t fract;
+                      if ((opt & (COLR_AREA | COLR_HORI)) == (COLR_CHAR | COLR_VERT))
+                        fract = (y - MinY) * MfractCV;
+                      else if ((opt & (COLR_AREA | COLR_HORI)) == (COLR_AREA | COLR_VERT))
+                        fract = (y - m_YMin) * MfractAV;
+                      else if ((opt & (COLR_AREA | COLR_HORI)) == (COLR_CHAR | COLR_HORI))
+                        fract = xbp * MfractCH;
+                      else if ((opt & (COLR_AREA | COLR_HORI)) == (COLR_AREA | COLR_HORI))
+                        fract = (x - m_XMin) * MfractAH;
+                      for (int i=0; i<3; i++)
+                      {
+                        if (c1[i] <= c2[i])
+                          v[i] = lerp16by16(c1[i]<<8, c2[i]<<8, fract) >> 8;
+                        else
+                          v[i] = lerp16by16(c2[i]<<8, c1[i]<<8, ~fract) >> 8;
+                      }
                     }
+                    if ((opt & COLR_HSV) == COLR_RGB)
+                      (*m_Matrix)(x, y) = CRGB(v[0], v[1], v[2]);
+                    else
+                      (*m_Matrix)(x, y) = CHSV(v[0], v[1], v[2]);
                   }
-                  if ((opt & COLR_HSV) == COLR_RGB)
-                    (*m_Matrix)(x, y) = CRGB(v[0], v[1], v[2]);
-                  else
-                    (*m_Matrix)(x, y) = CHSV(v[0], v[1], v[2]);
                 }
               }
-            }
-            else if ( (((opt & SCROLL_MASK) == SCROLL_DOWN) && ( (MinY <= m_YMin) || (y >= MinY)))
+              else if ( (((opt & SCROLL_MASK) == SCROLL_DOWN) && ( (MinY <= m_YMin) || (y >= MinY)))
                       || (((opt & SCROLL_MASK) != SCROLL_DOWN) && ( (MaxY >= m_YMax) || (y < MaxY))) )
-            // Fix for double dimming/blanking of blank vertical gap lines
-            {
-              if ((opt & BACKGND_MASK) == BACKGND_ERASE)
-                (*m_Matrix)(x, y) = CRGB(0, 0, 0);
-              else if ((opt & BACKGND_MASK) == BACKGND_DIMMING)
-                (*m_Matrix)(x, y).nscale8(bDim);
-            }
-          }
-          if ((y >= MinY) && (xbp != xgap))
-          {
-            if ((opt & CHAR_MASK) == CHAR_UP)
-              fdo -= m_FWBytes;
-            else if ((opt & CHAR_MASK) == CHAR_DOWN)
-              fdo += m_FWBytes;
-            else if ((opt & CHAR_MASK) == CHAR_LEFT)
-            {
-              if (bf == 0x01)
+              // Fix for double dimming/blanking of blank vertical gap lines
               {
-                bf = 0x80;
-                fdo++;
+                if ((opt & BACKGND_MASK) == BACKGND_ERASE)
+                  (*m_Matrix)(x, y) = CRGB(0, 0, 0);
+                else if ((opt & BACKGND_MASK) == BACKGND_DIMMING)
+                  (*m_Matrix)(x, y).nscale8(bDim);
               }
-              else
-                bf >>= 1;
             }
-            else if ((opt & CHAR_MASK) == CHAR_RIGHT)
+            if ((y >= MinY) && (xbp != xgap))
             {
-              if (bf == 0x80)
+              if ((opt & CHAR_MASK) == CHAR_UP)
+                fdo -= m_FWBytes;
+              else if ((opt & CHAR_MASK) == CHAR_DOWN)
+                fdo += m_FWBytes;
+              else if ((opt & CHAR_MASK) == CHAR_LEFT)
               {
-                bf = 0x01;
-                fdo--;
+                if (bf == 0x01)
+                {
+                  bf = 0x80;
+                  ++fdo;
+                }
+                else
+                  bf >>= 1;
               }
-              else
-                bf <<= 1;
+              else if ((opt & CHAR_MASK) == CHAR_RIGHT)
+              {
+                if (bf == 0x80)
+                {
+                  bf = 0x01;
+                  --fdo;
+                }
+                else
+                  bf <<= 1;
+              }
             }
+            ++y;
           }
-          ++y;
         }
         ++xbp;
         if (xbp > xbpmax)
@@ -468,16 +500,16 @@ int cLEDText::UpdateText()
           xbp = 0;
           ++tp;
         }
-        if ((opt & SCROLL_MASK) == SCROLL_RIGHT)
+        if ((opt & SCROLL_MASK) != SCROLL_RIGHT)
         {
-          --x;
-          if ((tp == m_pSize) && (xbp > 0))
+          ++x;
+          if (tp == m_pSize)
             ++tp;
         }
         else
         {
-          ++x;
-          if (tp == m_pSize)
+          --x;
+          if ((tp == m_pSize) && (xbp > 0))
             ++tp;
         }
       }

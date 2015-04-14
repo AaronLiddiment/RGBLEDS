@@ -26,6 +26,7 @@ FontHeight	KEYWORD2
 #######################################
 # Constants (LITERAL1)
 #######################################
+FONT_PROPORTIONAL	LITERAL1
 BACKGND_ERASE	LITERAL1
 BACKGND_LEAVE	LITERAL1
 BACKGND_DIMMING	LITERAL1
