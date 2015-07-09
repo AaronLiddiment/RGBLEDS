@@ -37,6 +37,7 @@ DecreaseFrame	KEYWORD2
 AddSprite	KEYWORD2
 IsSprite	KEYWORD2
 RemoveSprite	KEYWORD2
+RemoveAllSprites	KEYWORD2
 ChangePriority	KEYWORD2
 UpdateSprites	KEYWORD2
 RenderSprites	KEYWORD2

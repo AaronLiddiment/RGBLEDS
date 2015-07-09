@@ -1,5 +1,5 @@
 /*
-LEDSprites V3 class by Aaron Liddiment (c) 2015
+LEDSprites V4 class by Aaron Liddiment (c) 2015
 
 Inspiration came from my old C64 days :)
 
@@ -335,6 +335,17 @@ void cLEDSprites::RemoveSprite(cSprite *Spr)
     if (m_SpriteHead == Spr)
       m_SpriteHead = Spr->m_NextSprite;
     Spr->m_PrevSprite = Spr->m_NextSprite = NULL;
+  }
+}
+
+void cLEDSprites::RemoveAllSprites()
+{
+  cSprite *tmpSpr;
+
+  while ((tmpSpr = m_SpriteHead) != NULL)
+  {
+    m_SpriteHead = tmpSpr->m_NextSprite;
+    tmpSpr->m_PrevSprite = tmpSpr->m_NextSprite = NULL;
   }
 }
 

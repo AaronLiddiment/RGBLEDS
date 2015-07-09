@@ -97,6 +97,7 @@ class cLEDSprites
     void AddSprite(cSprite *Spr);
     boolean IsSprite(cSprite *Spr);
     void RemoveSprite(cSprite *Spr);
+    void RemoveAllSprites();
     void ChangePriority(cSprite *Spr, SpritePriority_t Priority);
     void UpdateSprites();
     void RenderSprites();
