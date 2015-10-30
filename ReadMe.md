@@ -1,3 +1,9 @@
+WILL NO LONGER BE MAINTAINED
+============================
+SEE SEPARATE CLASSES OFF THE ROOT OF MY GITHUB
+==============================================
+
+
 cLEDSprites Instructions
 ========================
 
